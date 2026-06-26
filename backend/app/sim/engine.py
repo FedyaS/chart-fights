@@ -307,14 +307,15 @@ class MatchState:
 
     def _apply_action(self, player_id: str, action_type: str, payload: Dict[str, Any], sim_t: Optional[Decimal] = None) -> bool:
         sim_t = sim_t if sim_t is not None else self.clock.T
-        ps = self.players.get(player_id)
-        if not ps:
-            return False
 
         if action_type == "advance":
             real_delta = Decimal(str(payload.get("real_delta", payload.get("delta", 1))))
             self.advance(real_delta)
             return True
+
+        ps = self.players.get(player_id)
+        if not ps:
+            return False
 
         if action_type in ("tb_influence", "set_tb"):
             self.clock.tb_resolver.set_influence(player_id, payload.get("level", "ff2"))
@@ -443,8 +444,18 @@ class SimulationEngine:
             now = time.perf_counter()
             delta = Decimal(str(now - self.state._last_advance))
             if delta > 0:
-                deltas = self.state.advance(delta)
+                pid = next(iter(self.state.players), None)
+                if pid:
+                    self.state.queue_action(pid, "advance", {"real_delta": str(delta)})
+                else:
+                    self.state.advance(delta)
                 self.state._last_advance = now
+                deltas = {
+                    "t": float(self.state.clock.T),
+                    "r": float(self.state.clock.get_r()),
+                    "current_bar": self.state.get_current_bar(),
+                    "fills": [],
+                }
                 if self._broadcast_cb:
                     # FULL DELTAS including current bar OHLC, TB/IP, events
                     payload = {

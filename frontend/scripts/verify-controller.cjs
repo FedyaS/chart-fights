@@ -49,6 +49,12 @@ for (const f of panelFiles) {
   log(`OK static ${f}`);
 }
 
+const pageSrc = readFileSync(join(root, 'src/app/page.tsx'), 'utf8');
+if (!pageSrc.includes("sendWSAction('submit_order'")) {
+  throw new Error('page.tsx must send submit_order via WS');
+}
+log('OK page.tsx wires submit_order to sendWSAction');
+
 const React = require('react');
 const { renderHook, act } = require('@testing-library/react');
 const { useReplayController } = require('../src/hooks/useReplayController.ts');

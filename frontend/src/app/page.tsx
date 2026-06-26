@@ -151,7 +151,14 @@ export default function ChartFightsApp() {
   const handleTBAction = (mult?: number) => { if (!ctrl) return; const lvl = mult ? (mult===2?'ff2':mult===3?'ff3':mult===5?'ff5':'base') : 'pause'; sendWSAction('tb_influence', {level: lvl}); if (mult) { ctrl.setSpeed(mult); setCurrentR(mult); setTb(v => Math.max(0, v - (mult===5?14:mult===3?7:3))); addLog('tb', `FF ×${mult} [WS sent]`); } else { ctrl.pause(); setCurrentR(0); setTb(v => Math.min(100, v + 7)); addLog('tb', 'Pause [WS sent]'); } };
   const handleOrder = (ord: any) => {
     const t = ctrl?.currentIndex || 0; const price = ord.price || (currentBars[t]?.close || 100);
-    addLog('order', `${ord.side} ${ord.size} @${price.toFixed(2)} (${ord.type})`, t);
+    sendWSAction('submit_order', {
+      type: ord.type,
+      instr: 'X',
+      side: ord.side,
+      size: ord.size,
+      ...(ord.price != null ? { price: ord.price } : {}),
+    });
+    addLog('order', `${ord.side} ${ord.size} @${price.toFixed(2)} (${ord.type}) [WS sent]`, t);
     if (ctrl && currentBars[t]) { const isB = ord.side==='long'; ctrl.addPlayerMarker(t, isB, 'p1'); ctrl.addPriceLine(price*(isB?0.985:1.015), isB?'ENTRY':'SHORT', isB?'#22c55e':'#ef4444'); }
     setIp(v => Math.min(120, v+1));
   };

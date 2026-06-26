@@ -26,7 +26,7 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100 }: OrderPanelProps
 
   return (
     <div className="panel p-3 flex flex-col gap-2">
-      <div className="text-xs font-medium">ORDERS (stub • logs to backend later)</div>
+      <div className="text-xs font-medium">ORDERS</div>
       
       <div className="flex gap-1 text-[11px]">
         {(['market', 'limit', 'stop'] as const).map((t) => (
@@ -50,7 +50,7 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100 }: OrderPanelProps
         PLACE {side.toUpperCase()} {otype.toUpperCase()} @ ~{currentPrice.toFixed(2)}
       </button>
 
-      <div className="text-[10px] text-[#9ca3af]">Attach SL/TP in full version. Sends action stub.</div>
+      <div className="text-[10px] text-[#9ca3af]">Sends submit_order via WS to backend.</div>
     </div>
   );
 }
