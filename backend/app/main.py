@@ -93,9 +93,9 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
     if player_id == "anon": player_id = f"p{len(room)+1}"
     room[player_id] = websocket
     eng.state.add_player(player_id)
+    await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
     if eng._task is None:
         eng.start()
-    await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
     try:
         while True:
             raw = await websocket.receive_text()

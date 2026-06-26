@@ -48,6 +48,7 @@ IP_START = Decimal("50")
 IP_REGEN = Decimal("0.5")
 IP_PNL_GRANT_PCT = Decimal("0.10")
 BASE_SPREAD_PCT = Decimal("0.0005")  # for future spread on fills
+CLOCK_PLAYER_ID = "_clock"  # system actor for bg advance actions (not a human player)
 
 
 @dataclass
@@ -446,15 +447,13 @@ class SimulationEngine:
             now = time.perf_counter()
             delta = Decimal(str(now - self.state._last_advance))
             if delta > 0:
-                clock_pid = next(iter(self.state.players), None)
-                if clock_pid:
-                    self.state.queue_action(clock_pid, "advance", {"real_delta": str(delta)})
-                    self.state._last_advance = now
-                    if self._broadcast_cb:
-                        try:
-                            await self._broadcast_cb(build_delta_payload(self.state))
-                        except Exception:
-                            pass
+                self.state.queue_action(CLOCK_PLAYER_ID, "advance", {"real_delta": str(delta)})
+                self.state._last_advance = now
+                if self._broadcast_cb:
+                    try:
+                        await self._broadcast_cb(build_delta_payload(self.state))
+                    except Exception:
+                        pass
             await asyncio.sleep(tick)
         self.state._active = False
         if self._broadcast_cb:

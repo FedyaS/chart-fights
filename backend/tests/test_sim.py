@@ -8,7 +8,7 @@ if root not in sys.path:
     sys.path.insert(0, root)
 
 from app.arena import get_available_arenas
-from app.sim.engine import SimulationEngine
+from app.sim.engine import SimulationEngine, CLOCK_PLAYER_ID
 
 
 def _build_engine():
@@ -120,6 +120,14 @@ def test_snapshot_and_verify_replay():
     assert ver["verified"] is True
     assert ver["final_equity"]["p1"] == ver["original_equity"]["p1"]
     assert ver["final_hash"] == ver["original_hash"]
+
+
+def test_clock_advance_uses_system_player():
+    eng, _ = _build_engine()
+    eng.state.queue_action(CLOCK_PLAYER_ID, "advance", {"real_delta": 1.0})
+    assert eng.state.actions_log[-1].player_id == CLOCK_PLAYER_ID
+    assert eng.state.actions_log[-1].type == "advance"
+    assert float(eng.state.clock.T) > 0
 
 
 def test_verify_replay_deterministic_twice():
