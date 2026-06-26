@@ -21,6 +21,7 @@ import hashlib
 import json
 try:
     from ..arena import load_arena
+    from .deltas import build_delta_payload
 except Exception:
     # fallback for direct test loads or non-package exec
     import sys
@@ -28,6 +29,7 @@ except Exception:
     root = Path(__file__).resolve().parents[2]
     if str(root) not in sys.path: sys.path.insert(0, str(root))
     from app.arena import load_arena
+    from app.sim.deltas import build_delta_payload
 
 getcontext().prec = 28
 
@@ -444,38 +446,15 @@ class SimulationEngine:
             now = time.perf_counter()
             delta = Decimal(str(now - self.state._last_advance))
             if delta > 0:
-                pid = next(iter(self.state.players), None)
-                if pid:
-                    self.state.queue_action(pid, "advance", {"real_delta": str(delta)})
-                else:
-                    self.state.advance(delta)
-                self.state._last_advance = now
-                deltas = {
-                    "t": float(self.state.clock.T),
-                    "r": float(self.state.clock.get_r()),
-                    "current_bar": self.state.get_current_bar(),
-                    "fills": [],
-                }
-                if self._broadcast_cb:
-                    # FULL DELTAS including current bar OHLC, TB/IP, events
-                    payload = {
-                        "type": "delta",
-                        "t": deltas["t"],
-                        "r": deltas["r"],
-                        "current_bar": deltas.get("current_bar"),  # OHLC for LW
-                        "resources": {
-                            pid: {"ip": float(ps.ip), "equity": float(ps.equity), "tb": self.state.clock.tb_resolver.snapshot().get("tbs", {}).get(pid)}
-                            for pid, ps in self.state.players.items()
-                        },
-                        "tb": self.state.clock.tb_resolver.snapshot(),
-                        "fills": deltas.get("fills", []),
-                        "events": self.state.events[-5:],
-                        "content_hash": self.state.content_hash,
-                    }
-                    try:
-                        await self._broadcast_cb(payload)
-                    except Exception:
-                        pass
+                clock_pid = next(iter(self.state.players), None)
+                if clock_pid:
+                    self.state.queue_action(clock_pid, "advance", {"real_delta": str(delta)})
+                    self.state._last_advance = now
+                    if self._broadcast_cb:
+                        try:
+                            await self._broadcast_cb(build_delta_payload(self.state))
+                        except Exception:
+                            pass
             await asyncio.sleep(tick)
         self.state._active = False
         if self._broadcast_cb:
