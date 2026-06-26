@@ -74,7 +74,13 @@ for ($run = 1; $run -le 2; $run++) {
         Stop-Server $proc
         exit 1
     }
-    Get-Content $clientOut -Encoding utf8 | ForEach-Object { Write-Log "client-file: $_" }
+    Get-Content $clientOut -Encoding utf8 | ForEach-Object {
+        if ($_ -match "^--- GATING:" -or $_ -match "^GET /matches/" -or $_ -match "^replay_p1_equity=" -or $_ -match "^=== RUN") {
+            Write-Log "client-gating: $_"
+        } elseif ($_ -notmatch "^ws_delta p1_eq=") {
+            Write-Log "client-file: $_"
+        }
+    }
 
     Stop-Server $proc
     if (Test-Path $uvicornLog) {
