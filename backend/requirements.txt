@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+websockets
+pyarrow
+pandas
+python-dotenv
+starlette
+pydantic
