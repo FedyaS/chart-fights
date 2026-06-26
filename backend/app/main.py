@@ -71,7 +71,7 @@ async def create_match(req: CreateMatchReq):
     ACTION_LOGS[match_id] = []
     for pid in (req.player_ids or ["p1", "p2"]):
         engine.state.add_player(pid)
-    engine.start()
+    # Clock starts on first WS connect so HTTP/harness actions stay replayable from actions_log.
     async def bc(payload): await broadcast_to_room(match_id, payload)
     engine.set_broadcast(bc)
     return CreateMatchResp(match_id=match_id, arena_id=req.arena_id, arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}")
@@ -93,6 +93,8 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
     if player_id == "anon": player_id = f"p{len(room)+1}"
     room[player_id] = websocket
     eng.state.add_player(player_id)
+    if eng._task is None:
+        eng.start()
     await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
     try:
         while True:
@@ -136,9 +138,7 @@ async def post_action(match_id: str, req: ActionReq):
 async def replay(match_id: str):
     eng = MATCHES.get(match_id)
     if not eng: raise HTTPException(404)
-    logs = ACTION_LOGS.get(match_id, [])
-    acts = [Action(0.0, eng.state.clock.T, l["player"], l["type"], l["payload"]) for l in logs]
-    return {"verify": eng.verify_replay(acts), "hash": eng.state.compute_state_hash()}
+    return {"verify": eng.verify_replay(eng.state.actions_log), "hash": eng.state.compute_state_hash()}
 
 
 if __name__ == "__main__":

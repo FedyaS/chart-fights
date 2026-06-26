@@ -297,14 +297,24 @@ class MatchState:
         deltas["current_bar"] = current_bar  # ensure
         return deltas
 
-    def queue_action(self, player_id: str, action_type: str, payload: Dict[str, Any]) -> bool:
+    def queue_action(self, player_id: str, action_type: str, payload: Dict[str, Any], *, record: bool = True) -> bool:
         real_ts = time.perf_counter()
         sim_t = self.clock.T
-        act = Action(real_ts=real_ts, sim_t=sim_t, player_id=player_id, type=action_type, payload=payload)
-        self.actions_log.append(act)
+        if record:
+            act = Action(real_ts=real_ts, sim_t=sim_t, player_id=player_id, type=action_type, payload=payload)
+            self.actions_log.append(act)
+        return self._apply_action(player_id, action_type, payload, sim_t=sim_t)
+
+    def _apply_action(self, player_id: str, action_type: str, payload: Dict[str, Any], sim_t: Optional[Decimal] = None) -> bool:
+        sim_t = sim_t if sim_t is not None else self.clock.T
         ps = self.players.get(player_id)
         if not ps:
             return False
+
+        if action_type == "advance":
+            real_delta = Decimal(str(payload.get("real_delta", payload.get("delta", 1))))
+            self.advance(real_delta)
+            return True
 
         if action_type in ("tb_influence", "set_tb"):
             self.clock.tb_resolver.set_influence(player_id, payload.get("level", "ff2"))
@@ -346,6 +356,7 @@ class MatchState:
                     "size": float(eff_size), "side": side, "type": "market", "t": float(sim_t)
                 }
                 self.events.append({"type": "fill", **fill_rec})
+                self._update_equity(ps, current_price)
                 # remove the order since filled in receive for instant market
                 ps.orders.pop() if ps.orders else None
             return True
@@ -484,16 +495,30 @@ class SimulationEngine:
         return snap
 
     def verify_replay(self, actions: List[Action]) -> Dict[str, Any]:
-        """Re-sim from arena + log for determinism + anti-cheat. Uses content_hash."""
+        """Re-sim from arena + action log; verified only when state hash + equity + T match."""
+        orig = self.state
         fresh = SimulationEngine(self.match_id, self.state.arena_id)
-        for act in sorted(actions, key=lambda a: a.real_ts):
-            fresh.state.queue_action(act.player_id, act.type, act.payload)
-            # advance minimally for timing sensitive
-            fresh.state.advance(Decimal("0.001"))
-        final_hash = fresh.state.compute_state_hash()
+        for pid in orig.players:
+            fresh.state.add_player(pid)
+
+        for act in sorted(actions, key=lambda a: (a.real_ts, float(a.sim_t))):
+            fresh.state._apply_action(act.player_id, act.type, act.payload, sim_t=act.sim_t)
+
+        orig_hash = orig.compute_state_hash()
+        fresh_hash = fresh.state.compute_state_hash()
+        orig_equity = {pid: float(ps.equity) for pid, ps in orig.players.items()}
+        fresh_equity = {pid: float(ps.equity) for pid, ps in fresh.state.players.items()}
+        orig_t = float(orig.clock.T)
+        fresh_t = float(fresh.state.clock.T)
+        verified = orig_hash == fresh_hash and orig_equity == fresh_equity and orig_t == fresh_t
+
         return {
-            "final_hash": final_hash,
-            "final_equity": {pid: float(ps.equity) for pid, ps in fresh.state.players.items()},
+            "final_hash": fresh_hash,
+            "original_hash": orig_hash,
+            "final_equity": fresh_equity,
+            "original_equity": orig_equity,
+            "final_t": fresh_t,
+            "original_t": orig_t,
             "content_hash": fresh.state.content_hash,
-            "verified": True,
+            "verified": verified,
         }

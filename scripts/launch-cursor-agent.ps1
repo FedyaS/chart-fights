@@ -11,7 +11,8 @@
   .\scripts\launch-cursor-agent.ps1 -Task "002-time-and-tempo"
 #>
 param(
-    [string]$Task
+    [string]$Task,
+    [string]$Prompt
 )
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -32,8 +33,15 @@ if ($Task) {
     }
 }
 
+if (-not $Prompt -and $Task) {
+    $Prompt = "Implement docs/cursor-tasks/task-$Task.md in backend/ and frontend/. Run tests after changes. Respect .cursorrules and opened design docs."
+}
+
 Write-Host "`nStarting Cursor Agent in terminal..." -ForegroundColor Yellow
 Write-Host "The agent will respect .cursorrules and the opened design docs." -ForegroundColor Gray
-
-# Start the Cursor agent
-cursor agent
+if ($Prompt) {
+    Write-Host "Prompt: $Prompt" -ForegroundColor Gray
+    $Prompt | cursor agent 2>&1 | Tee-Object -FilePath (Join-Path $projectRoot "scratch\cursor-agent-$(Get-Date -Format 'yyyyMMdd_HHmmss').log")
+} else {
+    cursor agent 2>&1 | Tee-Object -FilePath (Join-Path $projectRoot "scratch\cursor-agent-$(Get-Date -Format 'yyyyMMdd_HHmmss').log")
+}
