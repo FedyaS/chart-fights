@@ -68,7 +68,14 @@ for ($run = 1; $run -le 2; $run++) {
 
     $clientOut = Join-Path $ScratchDir "client-run$run.log"
     if (Test-Path $clientOut) { Remove-Item $clientOut -Force }
-    python (Join-Path $projectRoot "scripts\backend_launch_client.py") $clientOut $run 2>&1 | ForEach-Object { Write-Log "client: $_" }
+    python (Join-Path $projectRoot "scripts\backend_launch_client.py") $clientOut $run 2>&1 | ForEach-Object {
+        if ($_ -match "^ws_delta p1_eq=") { return }
+        if ($_ -match "^--- GATING:" -or $_ -match "^GET /matches/" -or $_ -match "^replay_p1_equity=") {
+            Write-Log "client-gating: $_"
+        } else {
+            Write-Log "client: $_"
+        }
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Log "ERROR: client failed run $run exit=$LASTEXITCODE"
         Stop-Server $proc
