@@ -13,6 +13,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 $backend = Join-Path $projectRoot "backend"
 $logFile = Join-Path $ScratchDir "backend-launch.log"
 New-Item -ItemType Directory -Force -Path $ScratchDir | Out-Null
+Set-Content -Path $logFile -Value "" -Encoding utf8
 
 function Write-Log($msg) {
     $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -21,7 +22,7 @@ function Write-Log($msg) {
     Write-Host $line
 }
 
-Write-Log "=== capture_backend_launch.ps1 start ==="
+Write-Log "=== capture_backend_launch.ps1 start (fresh log) ==="
 Write-Log "Project: $projectRoot"
 Write-Log "Port: $Port"
 

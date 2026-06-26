@@ -91,9 +91,10 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
     eng = MATCHES[match_id]
     room = CONNECTIONS.setdefault(match_id, {})
     if player_id == "anon": player_id = f"p{len(room)+1}"
-    room[player_id] = websocket
     eng.state.add_player(player_id)
+    # Snapshot before room registration so bg-clock deltas cannot race ahead of it.
     await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
+    room[player_id] = websocket
     if eng._task is None:
         eng.start()
     try:

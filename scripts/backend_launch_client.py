@@ -128,13 +128,17 @@ def main():
     scratch = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("backend-launch-client.log")
     label = sys.argv[2] if len(sys.argv) > 2 else "1"
     lines: list[str] = []
-    run_once(label, lines)
+    try:
+        run_once(label, lines)
+    except Exception as exc:
+        lines.append(f"ERROR={exc}")
+        scratch.parent.mkdir(parents=True, exist_ok=True)
+        scratch.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        for ln in lines:
+            print(ln)
+        sys.exit(1)
     scratch.parent.mkdir(parents=True, exist_ok=True)
-    mode = "a" if scratch.exists() and label != "1" else "w"
-    with open(scratch, mode, encoding="utf-8") as f:
-        if mode == "a":
-            f.write("\n")
-        f.write("\n".join(lines) + "\n")
+    scratch.write_text("\n".join(lines) + "\n", encoding="utf-8")
     for ln in lines:
         print(ln)
 
