@@ -1,0 +1,12 @@
+﻿AUTONOMOUS 5m SELF-CHECK 019f056b6ecb 2026-06-26T13:23:01.9588292-07:00
+1. Polled subs:
+- Voice ID 019f058c-b2e9-78e2-a0cb-437a411b4f08: Full output retrieved (high value). Key findings: WS signaling reuse (extend 005 rooms with offer/answer/ICE), P2P WebRTC setup with getUserMedia, STUN+ TURN (Coturn), <150ms, graceful fallback, mic perms, WebAudio indicators, NAT pitfalls/mitigations, FXR psych validation with quotes, sabo/TB bluff examples, VoicePanel next to chat (task-007), impl recs. Already in STATUS but re-appended excerpts.
+- Anti-cheat: No new sub ID; high value from design/anti-cheat-determinism-design-notes.md (logging, re-sim, GGPO/Photon patterns, pseudocode for det/TB/normalization). Referenced in STATUS.
+Incorporated: Appended poll summary + key excerpts to RESEARCH_STATUS Process Log.
+2. Verifs:
+- list docs/cursor-tasks/*.md: 8 confirmed.
+- grep TASK_MANIFEST: 43 occurrences.
+- grep forbidden old inline lists in design: 0.
+- Read: TASK_MANIFEST (canonical 8), GDD (vision/psych), game-mechanics-spec (time/TB model, shared T/R, exact rates).
+All hold.
+3. Saved to scratch/verif_5m_20260626_132301.txt

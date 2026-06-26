@@ -1,0 +1,7 @@
+﻿2m self-check 20260626_134648
+Tasks: 8 (expect 8)
+MANIFEST refs: 72
+Legacy design: 0
+Status: ALL HOLD
+Handoff: high per reads
+Chain: poll->review->verif->STATUS append->patch->open task->todos

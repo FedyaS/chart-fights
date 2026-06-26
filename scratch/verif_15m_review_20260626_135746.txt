@@ -1,0 +1,5 @@
+﻿15m review verif 20260626_135746
+Tasks: 8
+MANIFEST refs: 83
+Legacy: 0
+Status: ALL HOLD

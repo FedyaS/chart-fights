@@ -1,0 +1,13 @@
+﻿AUTONOMOUS SELF-CHECK 019f056b6ecb 5m 2026-06-26T13:20:16.4840734-07:00
+1. Polled subs:
+- Voice sub ID 019f058c-b2e9-78e2-a0cb-437a411b4f08: Completed, high value. Key: WS signaling over 005 rooms (offer/answer/ICE), P2P WebRTC setup, <150ms, TURN/Coturn, graceful fallback, mic perms, WebAudio indicators, NAT ~20-25% relay, FXR psych quotes + sabo/TB bluff exs (e.g. "Nice SLs...?", "I'm holding pause"), VoicePanel next to chat (task-007), recs for impl order, high readiness for task-008.
+  Full in scratch/sub_webrtc_voice_research_20260626.txt. Excerpts for handoff: FXR mental warfare, arch/mech/GDD refs.
+- Anti-cheat: No new sub ID found in recent scratch/STATUS search for poll (prior sub produced design/anti-cheat-determinism-design-notes.md with logging/re-sim, GGPO/Photon, pseudocode, harness for det/TB resolver/normalization - already in design and referenced in STATUS). High value from notes: action logging, exact re-sim for verify, checksums, tests.
+2. Verifs:
+- list docs/cursor-tasks/*.md: 8 confirmed.
+- grep TASK_MANIFEST: 39 occurrences.
+- grep forbidden old lists in design: 0 matches.
+- Read key: TASK_MANIFEST (canonical 8), GDD (vision, research insights, psych), game-mechanics-spec (time model, TB exact, shared T/R).
+All hold, no gaps.
+3. Saved to scratch/verif_selfcheck5m_20260626_132016.txt
+4-8. Will update STATUS, open in Cursor, etc.

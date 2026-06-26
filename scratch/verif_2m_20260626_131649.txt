@@ -1,0 +1,17 @@
+﻿2m SELF-CHECK 019f0552bbdb 2026-06-26T13:16:49.2442651-07:00
+Review handoff package completeness:
+- 8 tasks confirmed (task-001 to 008 + manifest).
+- TASK_MANIFEST canonical (37 refs across 7 files).
+- 0 legacy lists in design/.
+- IMPLEMENTATION_HANDOFF: high/complete, All hold, package ready.
+- plan.md verifs hold.
+- task-004 sample: self-contained (Goal, Reqs, ACs 1-6, full Cursor Prompt).
+- Design package (GDD/mech/arch/handoff/STATUS/research) aligned, recent deepens hold.
+- All hold: 8/8, 37 refs, 0 legacy, no gaps.
+
+Opened next in Cursor: task-004-orders-and-core-loop.md
+
+Updated RESEARCH_STATUS with notes.
+
+Verif saved.
+All hold. Chain action.

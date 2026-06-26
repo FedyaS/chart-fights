@@ -1,0 +1,6 @@
+﻿FIXED PS VERIF 20260626_144603
+Tasks: 8
+MANIFEST refs: 118 (>=70)
+Legacy (scoped design/cursor): 0 (0)
+ALL HOLD
+

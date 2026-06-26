@@ -1,0 +1,12 @@
+﻿2m SELF-CHECK 019f0552bbdb 2026-06-26T13:23:59.3183746-07:00
+Review handoff package completeness:
+- 8 tasks confirmed (list + count).
+- TASK_MANIFEST refs: 44 (grep).
+- Legacy in design: 0.
+- Manifest canonical (8 tasks).
+- Handoff high/complete per IMPLEMENTATION_HANDOFF + STATUS (All hold, package ready, subs/deepens integrated, roadmap updated with open Qs from sub).
+All hold.
+
+Opened next: task-004-orders-and-core-loop.md in Cursor.
+
+Updated RESEARCH_STATUS.

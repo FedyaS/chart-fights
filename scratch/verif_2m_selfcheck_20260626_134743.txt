@@ -1,0 +1,7 @@
+﻿2m self-check 20260626_134743
+Tasks: 8
+MANIFEST refs: 72
+Legacy: 0
+Status: ALL HOLD
+Opened next: task-004
+Handoff: complete (8/8, canonical MANIFEST, recent deepens on 005/006, subs integrated)

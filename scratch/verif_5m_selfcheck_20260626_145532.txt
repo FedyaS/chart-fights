@@ -1,0 +1,7 @@
+﻿5m VERIF 20260626_145532
+Tasks: 8
+MANIFEST scoped: 17
+Legacy scoped: 0
+Full: 122
+ALL HOLD
+

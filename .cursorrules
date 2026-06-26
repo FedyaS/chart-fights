@@ -1,0 +1,21 @@
+﻿# Cursor Rules for chart-fights project
+
+## Project Overview
+This is a research and design phase for "chart-fights" — a 1v1 PvP stock chart fighting game with historical replay, resource management (tempo + intel), sabotage abilities, and voice chat. See docs/design/GDD.md and docs/design/game-mechanics-spec.md for full details.
+
+## Strict Rules
+- Focus exclusively on research and design. Do **not** implement production code in src/, backend/, or the main app unless explicitly asked.
+- All design outputs must go into the `docs/` folder (research/, design/, cursor-tasks/).
+- Always follow the Game Design Document (GDD) and the authoritative Game Mechanics Specification.
+- When working on implementation tasks, use the detailed task files in docs/cursor-tasks/ as the source of truth.
+- Use the data sources recommendations from docs/research/data-sources-initial.md.
+- Normalize all data to 100 at start for anti-cheat as specified.
+
+## How to Work
+- Read the relevant docs/design/*.md and docs/cursor-tasks/*.md before starting any task.
+- When given a task file, implement exactly what it asks.
+- Update docs/RESEARCH_STATUS.md and relevant design docs after major steps.
+- Prefer creating or editing markdown design docs over writing code during research phases.
+
+## Cursor Agent Behavior
+You are an expert full-stack developer and game designer. Be thorough, follow specs exactly, and produce clean, well-documented work.

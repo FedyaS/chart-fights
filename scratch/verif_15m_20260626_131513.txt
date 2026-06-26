@@ -1,0 +1,20 @@
+﻿15m SELF-CHECK REVIEW 019f053a0cac 06/26/2026 13:15:13
+Review of all completed research (subs + own):
+- Data/analogs: yfinance/Stooq/Parquet P[0]=100; ChartChamps (Elo/replays/historical fairness), FXR (voice mental warfare validated with quotes + psych), Hedgd (duels/scrub), etc. Differentiation: MOBA TB/IP + sabotage + normalized private arenas + contested clock.
+- Mechanics: Full game-mechanics-spec (1s real=1 trading day, 300 bars 5min, shared T/R, exact TB 0-100 +1/s base +4 pause, consume 0/2/5/12, IP from P&L, sabotage always-notify, orders M/L/S+SL/TP modifiable, win equity, anti-cheat norm/generic).
+- Anti-cheat: anti-cheat-determinism-design-notes.md (logging/re-sim, GGPO/Photon/Bevy checksums/synctest, pseudocode/harness for norm arenas/TB).
+- LW Charts (multiple subs 019f0577/019f058c + browse): update() deltas > setData for stream, preload setData norm ~300 bars, logical ranges subscribe/setVisibleLogicalRange (master/slave, fractional for scrub/FF/pause), markers/createSeriesMarkers, createPriceLine, equity parallel, React useRef/useEffect/forwardRef + WS/timer, ReplayController (R-scaled interval), pitfalls, official tutorials (realtime-updates, react/advanced, time-scale). Sources linked.
+- Voice (sub 019f058c-b2e9...): WebRTC P2P + WS signaling (offer/answer/ICE to partner via 005 rooms), <150ms, TURN fallback, mic perms graceful, WebAudio indicators, NAT mitigations, FXR psych quotes + gameplay ties (sabo/TB bluffs), VoicePanel next to chat (007), recs for impl.
+- Arch/GDD/mech/handoff: Updated with insights. 8 cursor-tasks self-contained (Goal/Reqs/ACs/Prompts), TASK_MANIFEST canonical (34+ refs), 0 legacy, IMPLEMENTATION_HANDOFF complete/high + All hold, plan verifs PASS, real patches + verifs in scratch/.
+- Own/self-checks: Multiple 2/5/10/15m (All hold, opens, appends, verifs).
+Highest-value remaining: Deepen architecture with detailed LW ReplayController (sub explicit rec: sketch + Mermaid + deltas + patterns for task-007 handoff boost). Also enrich GDD psych with sub examples.
+Actions taken: 
+- Deepened architecture-overview.md (added LW Replay Controller subsection with pseudocode, logical sync, overlays impl, delta types, Mermaid flow, React lifecycle, pitfalls, handoff notes).
+- Deepened GDD.md §8 Social/Psych with FXR quotes, specific bluff/psych examples tied to sabo/TB, integration details.
+- Updated RESEARCH_STATUS.md (this 15m review summary + actions).
+- Updated todos.
+- Saved scratch/verif_15m_20260626_131513.txt (All hold).
+- Chained: Opened deepened files in Cursor; will append STATUS confirmation + next (e.g. roadmap or more if fits).
+- Focus: research/design/docs/ only. No code.
+- Compact note: Long history managed via STATUS Process Log summaries + scratch full subs/verifs; key excerpts only appended.
+All hold. Handoff package very complete (8/8 + design package). Momentum continued. Next useful: perhaps deepen roadmap open Qs or one more Cursor-task polish note.

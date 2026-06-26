@@ -1,0 +1,18 @@
+﻿[permission]
+allow = [
+  "Read",
+  "Grep",
+  "WebSearch",
+  "WebFetch",
+  "Edit(docs/**)",
+  "Write(docs/**)",
+  "Bash(ls *)",
+  "Bash(python -c \"*\")",
+  "Bash(curl *)"
+]
+deny = [
+  "Bash(rm *)",
+  "Edit(src/**)",
+  "Write(backend/**)",
+  "Write(the_vision/**)"
+]

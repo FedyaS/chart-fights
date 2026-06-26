@@ -1,0 +1,7 @@
+﻿Sub integration verif 2026-06-26T13:19:29.7832391-07:00 - 019f0593
+- Sub output reviewed: structured findings, tiers, suggested append.
+- Appended to roadmap-and-open-questions.md (consolidated open Qs + context from deepens/subs).
+- Appended to RESEARCH_STATUS.md (integration note).
+- Counts: 8 tasks; 39 TASK_MANIFEST refs (grep); 0 legacy in design.
+- Evidence: scratch/sub_roadmap_openqs_20260626.txt (full); updated roadmap; STATUS.
+- All hold: Handoff package strengthened (prioritized opens now consolidated with recent LW/voice/anti research). Ready for Cursor.

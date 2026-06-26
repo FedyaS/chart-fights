@@ -1,0 +1,13 @@
+﻿2m SELF-CHECK 019f0552bbdb 2026-06-26T13:20:53.5941569-07:00
+Review handoff package completeness:
+- 8 tasks confirmed (list + count).
+- TASK_MANIFEST refs: 39+ (grep).
+- Legacy in design: 0.
+- Manifest canonical (8 tasks).
+- Handoff high/complete per IMPLEMENTATION_HANDOFF + STATUS (All hold, package ready, subs integrated, deepens).
+- Recent: 5m opened 006+007, open-Qs sub integrated to roadmap, voice sub findings.
+All hold, no gaps.
+
+Opened next: task-008-voice-integration.md in Cursor.
+
+Updated RESEARCH_STATUS.

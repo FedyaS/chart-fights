@@ -1,0 +1,5 @@
+﻿5m self-check 20260626_135306
+Tasks: 8
+MANIFEST refs: 79
+Legacy: 0
+Status: ALL HOLD

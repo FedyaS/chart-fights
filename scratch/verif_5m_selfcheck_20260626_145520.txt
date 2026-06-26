@@ -1,0 +1,6 @@
+﻿5m VERIF 20260626_145520
+Tasks: 8
+MANIFEST scoped: 17
+Legacy scoped: 0
+Full: 122
+

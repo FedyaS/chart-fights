@@ -1,0 +1,5 @@
+﻿VERIF 20260626_143513
+Tasks=8 (8/8)
+MANIFEST refs=112 (high)
+Legacy lists=9 (0)
+ALL HOLD

@@ -1,0 +1,7 @@
+﻿10m self-check 20260626_134828
+No prompts: Yes
+Tasks: 8
+MANIFEST refs: 73
+Legacy design: 0
+Status: ALL HOLD
+Progress: Handoff mature (8/8, deepens on 005/006, subs integrated). Review: canonical MANIFEST, HANDOFF up-to-date, tasks self-contained.

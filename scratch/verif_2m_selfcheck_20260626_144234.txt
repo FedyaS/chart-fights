@@ -1,0 +1,6 @@
+﻿2m SELF-CHECK VERIF 20260626_144234
+Tasks: 8 (8/8)
+MANIFEST scoped: 17 (high)
+Legacy scoped: 0 (0)
+Full refs: 116
+ALL HOLD

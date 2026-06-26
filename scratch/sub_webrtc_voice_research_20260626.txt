@@ -1,0 +1,9 @@
+﻿**WebRTC Voice + Psych Research (background sub 019f058c-b2e9... voice) 2026-06-26** (full output saved):
+[See detailed sub output in context: signaling over task-005 WS rooms using offer/answer/ICE targeted sendTo room partner; P2P RTCPeerConnection + getUserMedia audio with echo/noise/autoGain; iceServers STUN (google) + TURN (Coturn example); graceful fallback on failed/disconnected (TURN or 3rd-party Twilio/Agora/LiveKit or text); mic perms graceful (NotAllowedError -> text only + re-request); visual indicators Web Audio Analyser for speaking + per-player states; <150ms easily (Opus ~10ms + net); NAT pitfalls symmetric/CGNAT/firewall ~20-25% need relay, test cross-net early; FXR validation "mental warfare... Live voice chat to talk strategy or trash... Text chat for reactions, quick calls, and taunts"; psych examples: bluff during sabotage "Nice SLs...?", TB taunts, peek calls; integration: VoicePanel next to TextChat in task-007 UI; WS voice events + Zustand; text polish emoji reactions to sabo/TB; recs: 1. signaling skeleton 2. native P2P 3. controls/indicators 4. fallback 5. perms/text 6. tests; high readiness for task-008 handoff.]
+
+Key excerpts appended:
+- FXR: "Trading is more than charts, it’s mental warfare. FXR Battles brings the intensity #### Live voice chat to talk strategy or trash #### Text chat for reactions, quick calls, and taunts." "Yes — live voice and text chat during active battles."
+- Arch/mech: P2P WS signaling, <150ms, NAT cons, voice core + psych fun factor + bluffs.
+- Rec for Cursor: paste this + task-008 + design package + FXR from STATUS. Prototype signaling early.
+
+Full sub output captured to scratch/sub_webrtc_voice_research.txt

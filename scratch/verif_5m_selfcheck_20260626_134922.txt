@@ -1,0 +1,7 @@
+﻿5m self-check 20260626_134922
+Tasks: 8
+MANIFEST refs: 74
+Legacy: 0
+Status: ALL HOLD
+Opened: task-002
+Handoff: review in progress

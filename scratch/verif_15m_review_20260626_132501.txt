@@ -1,0 +1,6 @@
+﻿15m REVIEW 019f053a0cac 06/26/2026 13:25:01
+All completed research reviewed: data/analogs (yfinance/Stooq/Parquet, ChartChamps/FXR), mechanics (time/TB/IP/sabo/orders), tech (FastAPI/LW/WebRTC/det/anti-cheat notes), subs (voice 019f058c full WebRTC/psych, openqs 019f0593 consolidated OQs, LW controller, anti), GDD/arch/roadmap deepens.
+Handoff: 8/8 (MANIFEST 45 refs, 0 legacy), package complete/high.
+Highest-value: Deepened task-008 w/ voice sub insights (cursor-task deliverable).
+Updated STATUS + todos. Saved this verif. Opened task-008 + handoff in Cursor. Chained.
+All hold. No gaps.

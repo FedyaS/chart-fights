@@ -1,0 +1,7 @@
+﻿15m REVIEW VERIF 20260626_150041
+Tasks: 8
+MANIFEST scoped: 17
+Legacy scoped: 0
+Full: 123
+ALL HOLD
+

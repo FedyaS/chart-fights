@@ -1,0 +1,12 @@
+﻿5m SELF-CHECK 019f056b6ecb 06/26/2026 13:27:55
+1. Polled:
+- Voice 019f058c...: Full output (WebRTC P2P, signaling over 005, <150ms, NAT, FXR psych, VoicePanel, recs). High value.
+- Anti-cheat: No new ID; from design/anti-cheat-determinism-design-notes.md (logging/re-sim, GGPO/Photon, pseudocode).
+Incorporated to STATUS.
+2. Verifs:
+- list: 8 tasks.
+- grep TASK_MANIFEST: 49 refs.
+- grep forbidden: 0.
+- Read: TASK_MANIFEST, GDD, mechanics-spec.
+All hold.
+3. Saved verif_5m_20260626_132755.txt

@@ -1,0 +1,6 @@
+﻿PS SCOPED VERIF 20260626_144553
+Tasks: 8
+MANIFEST refs (scoped): 17
+Legacy (scoped): 0
+REVIEW NEEDED
+

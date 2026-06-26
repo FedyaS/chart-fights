@@ -1,0 +1,17 @@
+﻿5m SELF-CHECK 019f056b6ecb 2026-06-26T13:33:03.6490602-07:00
+1. Polled:
+- Voice 019f058c...: full output (WebRTC P2P, signaling, <150ms, FXR psych, VoicePanel, recs). High value.
+- Anti-cheat: no new ID; from design/anti-cheat-determinism-design-notes.md (logging/re-sim/GGPO/Photon/pseudocode).
+Incorporated key to STATUS.
+2. Verifs:
+- list: 8 tasks.
+- grep TASK_MANIFEST: 53 refs.
+- grep forbidden: 0.
+- Read: TASK_MANIFEST, GDD, mechanics-spec (time model, TB etc).
+All hold.
+3. Saved verif_5m_20260626_133303.txt
+4. Updated STATUS.
+5. Opened Cursor.
+6. web_search for LW or parquet.
+7. todos.
+8. Chain append.

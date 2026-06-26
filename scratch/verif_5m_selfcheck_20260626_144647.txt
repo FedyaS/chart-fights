@@ -1,0 +1,7 @@
+﻿5m PS VERIF 20260626_144647
+Tasks: 8
+MANIFEST (design+cursor): 17
+Legacy bad (design+cursor): 0
+Full refs: 118
+ALL HOLD
+

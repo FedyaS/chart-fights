@@ -1,0 +1,301 @@
+# Subagent Research: Lightweight Charts Best Practices for Multi-Chart Synced Historical Replay Controller (React/TS)
+
+**Date:** 2026-06-26
+**Task:** Focused read-only deep dive for chart-fights frontend (task-007 + arch). Topics: update()/logical ranges for shared T/scrub/FF/pause, markers/priceLines for orders/SL/TP/equity, React refs lifecycle, WS deltas, ReplayController timer scaled by R, pitfalls (sync loops, delta vs setData), sources. Browse official docs, GitHub, tutorials.
+**Cross-check:** Prior LW sub (019f0577 in RESEARCH_STATUS), sub_task007_review.txt, architecture-overview.md, task-007-frontend-streaming.md, game-mechanics-spec.md (T/R model).
+**Output:** Structured findings, code patterns, mappings, excerpts for RESEARCH_STATUS append, arch tweak notes. Full saved here. High value for frontend handoff (no code edits).
+
+## 1. Local Codebase Context (Read-Only Exploration)
+
+- **No production frontend code yet**: Project is research/design phase. All in docs/. Scratch has sub_task007_review.txt, status_tail_anchor.txt (and transient files like web transcripts from prior runs). Grep confirmed no src/, no actual LW/ React impl files.
+- **Key references**:
+  - task-007-frontend-streaming.md: Goal = React/TS + LW Charts for streaming historical replay + panels (orders with SL/TP, TB controls for Pause/FF/R, IP, notifs, text chat). Use `series.update()` for new bars. WS consume deltas for T/R/bars/equity/orders. Multi-instr synced charts. Normalize display (P[0]=100). "Fast, tense, personal duel" feel. ACs include live charts, functional panels, tests/stories. Prompt emphasizes reusable components, Zustand, server truth (no heavy client pred), visual feedback for contested clock/sabotage.
+  - architecture-overview.md §5 (Frontend): Top rec LW Charts (tiny, canvas, `series.update()`, streaming). Deepened from prior sub: "Preload norm data (setData init); update() for deltas/stream (server T or R-scaled timer). Sync: timeScale visibleLogicalRange subs for multi-symbol/scrub/FF. Overlays: markers for trades, priceLines for levels, parallel series for equity. React: refs for live updates from WS/timer. Recs/pitfalls/sources in RESEARCH_STATUS LW dive. Suggested: ReplayController + Mermaid in full docs." Multiple synced charts, live bar append as T advances. Shared time axis (server T drives). Other: Zustand, optimistic UI, resize/perf.
+  - RESEARCH_STATUS.md (prior LW sub 019f0577 + reviews): Concise targeted dive matching this task exactly. Core: preload setData + update() deltas; logical ranges for sync; markers (createSeriesMarkers/setMarkers entries/exits), priceLines (SL/TP), equity Line/Area; React useRef+useEffect + advanced Context/forwardRef; WS onmessage update; ReplayController timer (scale by R/FF); server auth T/R client renders; pitfalls (delta vs full, visible jumps, sync loops, marker perf, ref lifecycle, time consistency); sources (official docs/tutorials/react, GitHub plugin-examples, tradingview.com). Recs: LW v5+; expand arch with controller sketch. Later self-checks integrate: "LW Charts confirmed: ... Maps perfectly to task-007 + prior LW sub". sub_task007_review.txt: High readiness; explicitly calls out LW practices (preload setData, update deltas, logical sync, markers/priceLines/equity, React refs + WS + timer controller; handle pitfalls); recommends agent follow LW sub recs exactly for reusable Chart component with synced timeScale etc.
+  - game-mechanics-spec.md §1 (Time Model): 1 real sec = 1 trading day (1 daily bar). Shared T (bar index, integer+frac), contested R (rate: base 1.0, FFx2/3/5, Pause forces R=0). ~300 bars base for 5min match. Visual: generic "Sim Day NNN". All execution/PnL driven by shared T. Charts advance with T; overlays (orders at T, equity curve over T).
+  - Other: GDD/UI flows emphasize multi-chart shared scrubber/synced; anti-cheat notes (client optimistic chart updates ok if server truth); roadmap Phase 3 frontend.
+- **Mapping seeds**: T = logical bar index for scrub/visible range. R scales client timer or interp. Orders/SL/TP/equity = overlays tied to T. WS deltas from task-005 backend (T/R/bars/equity/orders/events). Server authoritative (client render/consume).
+
+Cross-check holds: Prior sub + arch + task-007 perfectly scoped this deep dive. No contradictions; this expands with verbatim patterns/excerpts.
+
+## 2. Official LW Best Practices - Data Loading & Streaming Updates (update() vs setData)
+
+**Core Rec from Docs** (https://tradingview.github.io/lightweight-charts/docs "Setting and updating a data"):
+- **Initial preload (full historical slice, normalized)**: `series.setData(fullArray); chart.timeScale().fitContent();`
+  Example (candlestick):
+  ```ts
+  const candlestickSeries = chart.addSeries(CandlestickSeries, { upColor: '#26a69a', ... });
+  candlestickSeries.setData([
+    { time: '2018-12-22', open: 75.16, high: 82.84, low: 36.16, close: 45.72 },
+    // ... ~300 normalized bars, time as 'YYYY-MM-DD' or unix ts or BusinessDay obj
+  ]);
+  chart.timeScale().fitContent();
+  ```
+  "You can also use `setData` to replace all data items."
+
+- **Streaming / deltas / appends / replay advance (preferred)**: `series.update(bar);`
+  - Updates last bar OR appends new one if time > last.
+  - For real-time/historical replay: call on new bar arrival or timer tick.
+  Example:
+  ```ts
+  // Update most recent
+  areaSeries.update({ time: '2018-12-31', value: 25 });
+  candlestickSeries.update({ time: '2018-12-31', open: 109.87, high: 114.69, low: 85.66, close: 112 });
+  // New bar (advance T)
+  candlestickSeries.update({ time: '2019-01-01', open: 112, high: 112, low: 100, close: 101 });
+  ```
+- **Strong warning**: "We do not recommend calling `setData` to update the chart, as this method replaces all series data and can significantly affect the performance."
+  - Matches task pitfalls exactly: use update() for deltas/stream; setData only init or rare full replace.
+- Time formats: Consistent strings ('YYYY-MM-DD'), numbers (unix), or objects. LW v5+ handles well. Preload identical normalized slices for multi-symbol.
+- Perf: Trivial for ~300 bars (engineered for thousands + frequent updates). v5.1+ data conflation helps.
+- Sources: Official getting-started, series-types (setData examples for all types: CandlestickData, etc.).
+
+**Mapping**: Arch/task-007 "realtime `series.update()` for new bars" + "WS client consume deltas". Preload from task-006 arenas (norm to 100). For replay: on WS new-bar-delta or local T-advance, update().
+
+## 3. Multi-Chart Sync with Logical Ranges (Shared T / Scrub / FF / Pause)
+
+**Key API**: ITimeScaleApi - `subscribeVisibleLogicalRangeChange`, `setVisibleLogicalRange`, `getVisibleLogicalRange`, `fitContent`.
+
+**Official Sync Pattern** (https://tradingview.github.io/lightweight-charts/tutorials/how_to/set-crosshair-position - "Syncing two charts"):
+```ts
+// After creating chart1, chart2 + series + setData
+chart1.timeScale().subscribeVisibleLogicalRangeChange(timeRange => {
+  chart2.timeScale().setVisibleLogicalRange(timeRange);
+});
+chart2.timeScale().subscribeVisibleLogicalRangeChange(timeRange => {
+  chart1.timeScale().setVisibleLogicalRange(timeRange);
+});
+// Also crosshair sync via subscribeCrosshairMove + setCrosshairPosition
+```
+- Logical range: `{ from: number, to: number }` (bar indices, fractional ok e.g. 5.2 = 5th bar + 20% visible). Starts from first data (neg before). Ideal for index-driven shared T (scrub to exact bar, independent of actual dates).
+- Data range (time-based `setVisibleRange`) clips; logical allows margins/extrapolation control.
+- TimeScale doc (https://tradingview.github.io/lightweight-charts/docs/time-scale): "The [setVisibleLogicalRange] method allows you to specify the visible range beyond the bounds of the available data. ... logical range represents ... indices". Use for "chart margin", align series. `fitContent()` for initial.
+- GitHub/Discussions (e.g. #1163 multiple windows, #1108 React panes sync): Logical + subs work; for many charts "very slow if cross synched" -> master/slave (one drives others). Bidirectional risks loops.
+
+**Best Practice for React Multi-Chart (Master/Slave to Avoid Loops)**:
+- Designate "master" chart (e.g. primary instrument or controlled by ReplayController).
+- Master sub -> set on slaves (no reverse sub, or guard with flag).
+- On shared T change (WS or controller): compute logical range around current bar index (e.g. `{from: currentT - offset, to: currentT + visibleWidth}`), setVisibleLogicalRange on master (propagates).
+- User scrub/pan/zoom on any: if master, update shared state/T visual; slaves follow.
+- For FF/pause/scrub: controller adjusts visible logical + (optionally) highlights current T bar (e.g. via vertical line plugin or marker).
+- Preload identical time-range data across charts.
+- Also sync crosshair for "duel" feel.
+
+**Pitfall - Sync Loops**: Bidirectional subs without master or `if (syncing) return; syncing=true; set...; syncing=false;` -> stack overflow or jitter. Official example is simple 2-chart; scale with care. Discussions note perf for 4+.
+
+**Mapping to arch/task**: "timeScale logical sync for shared clock/scrub/FF". Server T drives (broadcast delta or currentT), client sets logical. Logical for "index-driven scrub" (prior sub).
+
+## 4. Overlays: Markers (Orders/Events), PriceLines (SL/TP), Equity Series
+
+**Markers** (https://tradingview.github.io/lightweight-charts/tutorials/how_to/series-markers):
+- `createSeriesMarkers(series, markers)` (preferred/newer) or `series.setMarkers(markersArray)`.
+- Full replace: keep array of all active markers, reconstruct + set on change.
+- Example:
+  ```ts
+  const markers = [
+    { time: '2018-12-23', position: 'aboveBar', color: '#f68410', shape: 'circle', text: 'Buy' },
+    { time: '2018-12-25', position: 'belowBar', color: '#ef5350', shape: 'arrowDown', text: 'SL Hit' },
+    // ...
+  ];
+  createSeriesMarkers(candlestickSeries, markers);  // or series.setMarkers(markers)
+  ```
+- Position: 'aboveBar'/'belowBar'/'inBar'. Shape: circle/square/arrowUp/etc. Text for labels (entries "L 10u @102", exits).
+- Use for: Long/Short entries, fills, SL/TP triggers, sabotage events, news at specific T. Update on WS order/fill deltas or T-advance.
+- Tip (community): To append, reconstruct full array from prior + new: `series.setMarkers([...existing, newMarker])`.
+
+**Price Lines** (https://tradingview.github.io/lightweight-charts/tutorials/how_to/price-line + API):
+- `const pl = series.createPriceLine({ price: 1234, color: '#3179F5', lineWidth: 2, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: 'SL 1.05' });`
+- Update: `pl.applyOptions({ price: newPrice, title: '...' });`
+- Remove: `series.removePriceLine(pl);` (keep refs in map by orderId).
+- Disable built-in: `series.applyOptions({ lastValueVisible: false, priceLineVisible: false });`
+- Perfect for live SL/TP levels (horizontal, labeled). Multiple per series (or per-instrument chart). Tie to active orders/positions from WS state.
+
+**Equity / PnL Overlay**:
+- Add parallel series on same chart or dedicated: `const equitySeries = chart.addSeries(LineSeries, { color: '#00ff00', lineWidth: 2, priceScaleId: 'right' /* or separate */ });`
+- `equitySeries.setData([{time: '2018-12-22', value: 100}, ...]);` then `equitySeries.update({time: current, value: currentEquity});`
+- Or Area for filled curve. Separate price scale to not distort main price. Update on every equity delta from WS (or computed locally from positions + bars, but server truth preferred).
+- Prior sub/arch: "Equity as Line/Area series (parallel or separate scale)".
+
+**General**: Attach to main price series (candlestick for instruments). Update reactively on deltas. For multi-instr: one chart per symbol or panes? (LW panes for volume/indicators within one; separate chart instances for distinct symbols common for sync).
+
+**Mapping**: Task-007 "orders (market/limit/stop + SL/TP)", "equity curve mini-chart". Mech: orders/positions at T, PnL marked on T advance. Visual psych layer (sabotage hits as markers).
+
+## 5. React/TS Lifecycle, Refs, Composability (Official Advanced Patterns)
+
+**Official Advanced React Tutorial** (https://tradingview.github.io/lightweight-charts/tutorials/react/advanced - strongly recommended):
+- Challenges: Hooks run bottom-up on mount / top-down cleanup -> parent/child order issues for chart/series.
+- Solution: Refs + Context + forwardRef + useImperativeHandle + useLayoutEffect (for DOM timing).
+- Structure:
+  - `<Chart>` (container ref) > `<ChartContainer ref=...>` (creates chart via useRef internal, exposes api) > `<Series ref=seriesRef type=... data=... />` (creates series on chart context, setData, cleanup removeSeries).
+  - Internal refs store methods for create/free.
+  - Expose via useImperativeHandle so parent/WS can do `seriesRef.current.update(bar)`.
+- Simple pattern (common in community):
+  ```tsx
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);  // or map for multi
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const chart = createChart(containerRef.current, { width: 600, height: 300, ...opts });
+    chartRef.current = chart;
+    const series = chart.addSeries(CandlestickSeries, { ... });
+    seriesRef.current = series;
+    series.setData(initialData);
+    chart.timeScale().fitContent();
+
+    const handleResize = () => { chart.resize(...); };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      chart.remove();  // critical
+      chartRef.current = null;
+      seriesRef.current = null;
+    };
+  }, [/* deps */]);
+
+  // Later (WS or timer)
+  const handleDelta = (bar) => {
+    if (seriesRef.current) seriesRef.current.update(bar);
+  };
+  ```
+- Lifecycle notes: useLayoutEffect for create/apply (before paint). Cleanup subscriptions (e.g. `unsubscribeVisibleLogicalRangeChange`). Refs survive renders (store instances). Avoid reading .current in deps (stale). For conditional series: use state to mount <Series>, manage in refs.
+- Advanced: Context.Provider for chart api down to children. useCallback for container. Theme/layout updates via applyOptions in effects.
+- Resize: Always handle (container clientWidth/Height + observer or listener). LW canvas.
+- TS: Native declarations included. Types: IChartApi, ISeriesApi, etc. from 'lightweight-charts'.
+- Pitfalls: Double-mount in React StrictMode (dev); leaks if no cleanup; stale closures (use refs or latest-callback patterns).
+
+**Mapping**: Arch "React: refs for live updates from WS/timer". Task-007 "reusable components". Official tutorial directly supports composable <Chart><Series ref=...> for multi-instr + overlays.
+
+## 6. ReplayController / Timer Scaled by R + Scrub/FF/Pause
+
+**No official "ReplayController"** - custom pattern (prior sub/arch explicitly suggest implementing one).
+- **Timer pattern** (inspired by advanced React tutorial streaming useEffect + setInterval example):
+  ```ts
+  // In component or custom hook
+  const replayControllerRef = useRef<{ timer: number | null; currentT: number }>({ timer: null, currentT: 0 });
+
+  useEffect(() => {
+    if (!isPlaying || R <= 0) {
+      if (replayControllerRef.current.timer) clearInterval(...);
+      return;
+    }
+    const baseMs = 1000;  // 1s real ~ 1 bar at R=1
+    const interval = Math.max(50, baseMs / R);  // scale by R (FF faster = shorter interval)
+    replayControllerRef.current.timer = setInterval(() => {
+      // Option A (client-driven preview, reconcile server): advance local index, setVisibleLogicalRange, update local overlays
+      // Option B (server-driven): request/emit "advance" or just wait for WS T-delta
+      // On tick or T update:
+      const newLogical = { from: currentT - 10, to: currentT + 20 };  // or focus current bar
+      masterChart.timeScale().setVisibleLogicalRange(newLogical);
+      // Update equity/markers if needed
+    }, interval);
+    return () => { if (timer) clearInterval(timer); };
+  }, [isPlaying, R /*, currentT from WS */]);
+  ```
+- **Logical for scrub/FF/Pause**:
+  - Scrub (user drag or slider on T): `chart.timeScale().setVisibleLogicalRange({ from: targetT - w, to: targetT + w });` (or set crosshair). Broadcast or send action if needed.
+  - FF/Pause: UI buttons send TB actions (task-005/007); on R change from WS state, restart scaled timer or adjust visible follow.
+  - Shared T: WS delta {T: number, R: number} drives visible follow (auto-scroll to latest or user-controlled offset). Logical ideal vs time-range (date-independent).
+  - Pause (R=0): Stop timer, freeze visible or allow manual scrub.
+  - Server auth (arch): Client timer for smooth UX/smoothing; server T authoritative (snap/reconcile on deltas). Conservative smoothing for variable R/latency.
+- fitContent on init or after big jumps. Subscriptions for user-initiated pan/zoom feedback.
+- Edge: Fractional T (smooth advance); non-trading days skipped in data.
+
+**Mapping**: Prior sub "ReplayController with timer (scale interval by R/FF). ... Logical ranges for index-driven scrub." Arch "server T or R-scaled timer". Mech: R contested, T shared bar index. Task-007 TB controls drive/send actions, reflect R.
+
+## 7. WS Deltas Integration Patterns
+
+- Connect: Subscribe match room (task-005). Receive initial snapshot (full data? or setData + state) + incremental deltas.
+- On message:
+  ```ts
+  ws.onmessage = (e) => {
+    const delta = JSON.parse(e.data);  // e.g. { type: 'bar', bar: {...}, T, R } | {type: 'equity', value}, {type: 'orders', orders: [...]}, {type: 'event', ...}
+    if (delta.bar && seriesRef.current) seriesRef.current.update(delta.bar);
+    if (delta.equity !== undefined) equitySeries.update({ time: delta.T, value: delta.equity });
+    if (delta.orders) {
+      const newMarkers = buildMarkersFromOrders(delta.orders);  // reconstruct
+      createSeriesMarkers(mainSeries, newMarkers);
+      // Rebuild priceLines: remove old, create new for active SL/TP
+    }
+    if (delta.T !== undefined || delta.R !== undefined) {
+      // Update controller state, adjust visible logical if following, update TB UI
+    }
+    // Optimistic: own actions reflected immediately, reconcile on server delta
+  };
+  ```
+- Initial: On join, setData for charts from arena slice (or snapshot), then deltas.
+- Reconnect/snapshots: Per arch open Qs + task-005 ACs (basic snapshot).
+- Bandwidth: Deltas (not full OHLC every tick). ~10-20Hz or on-change per prior.
+- Client smoothing: Lerp visible or equity for variable R/latency (arch "conservative smoothing").
+
+**Mapping**: "WS client consume deltas for T/R, bars, equity, orders...". Arch: "Bidirectional deltas (T/R, bars/OHLC deltas, equity/orders/positions/resources/events)".
+
+## 8. Key Pitfalls & Mitigations (Explicit in Prior Sub + Research)
+
+- **Delta vs setData**: setData = full replace, perf killer + visible jumps/shifts/resets zoom (issues #1875, SO threads). Always update() for stream/replay appends. setData only init or full reload.
+- **Sync loops**: Bidirectional logical subs -> loops/jitter. Mitigate: master/slave (one sub drives others), guard flags, or controlled (server T drives all via one path). Test with 2+ charts.
+- **React refs/lifecycle**: Stale refs in timers/handlers; leaks (no unsubscribe/remove); StrictMode double; bottom-up hook issues (use official advanced ref+context pattern). Cleanup always: remove chart, unsub timeScale, clearInterval, null refs.
+- **Visible jumps / range issues**: setData or bad logical resets view. Use logical for scrub (allows beyond data). No extrapolation on time-range (clips). fitContent carefully.
+- **Markers**: No incremental; full setMarkers/createSeriesMarkers(array) each time. Keep master list.
+- **Time consistency**: Uniform format across preload/deltas/WS. Handle fractional T for smooth.
+- **Perf/scale**: Trivial here (~300 bars), but throttle updates, batch markers/priceLines. Resize listener always.
+- **Other (from issues/docs)**: Insert middle data -> rebuild+setData. PriceLines atop series (z-order). Attribution per license. Mobile touch for scrub.
+- **Desync with server**: Client timer optimistic; always snap to authoritative T/R/equity on deltas. Test lag (arch pitfalls).
+
+Sources confirm these recur in GitHub issues/discussions.
+
+## 9. Recommended Code Patterns / Excerpts for Handoff (Ready-to-Adapt)
+
+(See sections 2-7 for full). Key reusable:
+- SyncedChart component: accepts data, seriesType, onRangeChange?, master flag. Internal ref + sub/set logic.
+- useReplayController(R, isPlaying, onAdvance): scaled interval, logical set, cleanup.
+- useLWChart(containerRef): returns {chart, seriesMap, updateBar, setMarkers, createPriceLine, setVisibleLogical}.
+- Delta handlers pure: map WS payload -> series ops.
+- Full advanced React skeleton from official tutorial (copy-paste base, adapt for TS + multi + overlays + WS).
+
+## 10. Mapping to task-007 + Architecture
+
+- **task-007 ACs/Reqs**: Directly enabled: WS hook + update for live bars (AC2); order panel + markers/priceLines reflect state (AC3); TB controls + R-scaled controller + logical for shared (AC4); equity/notifs via series + markers (AC5/6). Reusable Chart + panels. "Duel feel" via synced + contested visuals. Follows prompt/stack.
+- **Arch**: Preload setData + update deltas; logical subs for sync/scrub/FF (with ReplayController); overlays exact match; refs + WS; server T + R-timer; conservative smoothing. Prepares voice panel integration (next to chat).
+- **Mech/others**: T/R from spec; orders/SL/TP/equity from core loop; deltas from realtime backend; norm data from pipeline.
+- High fidelity: No invention needed; patterns are direct lifts.
+
+## 11. Cross-Check with Prior LW Sub in STATUS + Related
+
+- **Exact match/expansion**: Prior sub (STATUS ~245-265) is near-verbatim summary of topics here. This deep-dive adds: full code excerpts from official pages (update examples, logical sync bidirectional code, markers/priceLine short+full, time-scale logical details, React advanced skeleton), specific master/slave recs from GitHub, WS delta pseudocode, timer scaling example, precise pitfalls with issue refs, updated sources. 
+- **Arch integration**: Already references sub ("Deepened LW Replay (from sub 019f0577)"); suggests ReplayController + Mermaid (still open for append).
+- **sub_task007_review.txt**: Reiterates "LW best practices (preload setData norm, update() streaming/deltas, logical ranges sync, markers/priceLines/equity, React refs + WS onmessage + timer controller; handle pitfalls)". High readiness; agent should follow exactly. Consistent.
+- **No gaps/contradictions**: All align. Prior was "targeted research"; this is "focused read-only deep dive" with browsed sources for excerpts. STATUS self-checks confirm "maps perfectly".
+- **Evidence**: Grep hits across STATUS/arch/task-007/scratch review all point to same patterns.
+
+## 12. Recommended Excerpts for Append to RESEARCH_STATUS.md
+
+Append under LW section or new "LW Controller Deep Dive (sub 2026-06-26)" after prior sub:
+
+**LW Controller Patterns (Deep Dive 2026-06-26 for task-007 handoff)**:
+[Condensed key findings + 1-2 code blocks from above: update warning, logical sync excerpt, markers/priceLine short answers, React useEffect cleanup skeleton, ReplayController timer example, pitfalls bullets, sources list.]
+"Expands prior sub 019f0577 with verbatim official excerpts. Ready for arch Mermaid + controller sketch. See scratch/sub_lw_controller_20260626.txt for full."
+
+Also append to process log/self-checks as needed.
+
+## 13. Possible Architecture Tweak Notes
+
+- **Add to arch §5 or new subsection**: Detailed "ReplayController" sketch (pseudocode above) + Mermaid (timer -> logical set / WS T-delta -> visible follow; master chart drives slaves; overlay update flow). Explicit "Delta Types" (BarDelta, ResourceDelta {T,R}, OrderDelta {list or diff for markers/priceLines}, EquityDelta).
+- **Frontend component rec**: `<SyncedMultiChart instruments={...} masterChartRef onTChange sharedState />` with internal logical master/slave.
+- **State**: Zustand slice for currentT, R, visibleLogical (or derive), activePriceLinesMap (by id), markersList.
+- **Open Qs to note**: Exact client vs server advance for scrub (send actions? local only?); smoothing lerp amount for R changes; current-T vertical line (plugin or marker at latest bar); equity on separate pane/scale vs overlay.
+- **Handoff boost**: Include in task-007 prompt or IMPLEMENTATION_HANDOFF: "Follow LW sub in STATUS + this deep dive + official advanced React tutorial exactly for refs/controller."
+- Low risk: These are enhancements/clarifications, not changes to recs.
+
+**Sources (browsed/confirmed)**:
+- Official: https://tradingview.github.io/lightweight-charts/docs (getting started, time-scale, series-types)
+- Tutorials: /tutorials/react/advanced, /how_to/set-crosshair-position (logical sync code), /how_to/series-markers (createSeriesMarkers), /how_to/price-line (createPriceLine)
+- GitHub: lightweight-charts (issues #1163 sync, discussions #1108 React sync, various update/setData)
+- Community: YT (streaming with update, markers), SO/Stack (logical pitfalls)
+- Prior local: RESEARCH_STATUS LW sub, arch, task-007, mech-spec, sub_task007_review.
+
+**Full research complete. High value excerpts/patterns above for Cursor/frontend agent. No local files modified.** 
+
+(End of sub output. Paste relevant sections + this file ref into STATUS/arch for handoff.)

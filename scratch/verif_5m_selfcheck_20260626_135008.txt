@@ -1,0 +1,8 @@
+﻿AUTONOMOUS SELF-CHECK 019f056b6ecb 06/26/2026 13:50:08
+Tasks: 8 (expect 8)
+MANIFEST refs: 75
+Legacy in design/: 0
+Key reads: GDD, MANIFEST, mechanics-spec - done
+All hold: YES - 8/8 + clean + high refs
+Subs polled (see tool results)
+Chain: poll -> verif -> save -> STATUS update -> cursor opens

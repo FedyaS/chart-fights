@@ -1,0 +1,17 @@
+﻿AUTONOMOUS SELF-CHECK VERIF 06/26/2026 13:12:44
+Task: 019f056b6ecb 5m self-check
+1. Polled subs:
+- Voice sub ID 019f058c-b2e9-78e2-a0cb-437a411b4f08 (completed): FULL output retrieved. High value: WebRTC P2P + WS signaling details (offer/answer/ICE for task-005 rooms), <150ms, TURN/Coturn, graceful fallback, mic perms, visual indicators (WebAudio), NAT pitfalls/mitigations, psych/mental warfare tie to sabotage/TB (bluff examples: "Nice SLs...?", TB taunts), FXR quotes, integration with task-007 UI (VoicePanel next to TextChat), recs for impl order + excerpts for handoff. Already in scratch/sub_webrtc_voice_research_20260626.txt . Key findings to incorporate.
+- Anti-cheat: No fresh sub ID found in recent scratch/STATUS for new poll (prior subs produced anti-cheat-determinism-design-notes.md with pseudocode, harness, TB resolver, normalization, verify/checksums, synctest). Read notes file for high value (see below). References in STATUS to "anti-cheat sub notes".
+2. Re-ran verifs:
+- list docs/cursor-tasks/*.md : 8 files confirmed (task-001-anti-cheat-normalization.md to task-008-voice-integration.md + manifest + readme)
+- grep 'TASK_MANIFEST' or 'see .../TASK_MANIFEST': 32 occurrences across 7 files (STATUS, plan, arch, roadmap, GDD, cursor README, handoff). Good.
+- grep forbidden old inline lists in design/: 0 matches (PASS)
+- read 2-3 key: TASK_MANIFEST.md (canonical 8-task table, notes), GDD.md (vision, core fantasy, MOBA + voice), game-mechanics-spec.md (time model 1s=1day, 300 bars, shared T/R, TB rates exact)
+3. Saved to scratch/verif_selfcheck_20260626_131244.txt (this content + outputs)
+4. Will update RESEARCH_STATUS with log + voice key findings.
+5. Cursor opens done (arch + anti-cheat-notes)
+6. web_search done for LW replay controller / logical (results below)
+7. todos updated.
+8. Chain: voice high value -> append key excerpts/recs to RESEARCH_STATUS Process Log and IMPLEMENTATION_HANDOFF.md voice notes. Anti-cheat notes read: high value determinism pseudocode already referenced; append note if needed.
+All hold: 8/8, refs 32, legacy 0, subs polled (voice good, anti via notes), reads PASS, evidence saved.
