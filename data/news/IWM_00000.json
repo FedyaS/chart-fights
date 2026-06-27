@@ -1,0 +1,527 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 3,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 5,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 8,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 10,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.8,
+      "forecast": 2.9,
+      "prior": 2.8,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 25,
+      "kind": "headline",
+      "title": "Profit-taking drags Broad Equity Index lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 28,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 3.1,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Profit-taking drags Broad Equity Index lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 53,
+      "kind": "headline",
+      "title": "Broad Equity Index catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 54,
+      "kind": "headline",
+      "title": "Broad Equity Index slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 60,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 61,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.8,
+      "forecast": 2.7,
+      "prior": 2.6,
+      "surprise": 0.1,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 66,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 74,
+      "kind": "headline",
+      "title": "Broad Equity Index slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 4.1,
+      "forecast": 3.8,
+      "prior": 3.7,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 89,
+      "kind": "headline",
+      "title": "Broad Equity Index slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 90,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Broad Equity Index catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 95,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 97,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 98,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.9,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 107,
+      "kind": "headline",
+      "title": "Profit-taking drags Broad Equity Index lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 112,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 115,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 119,
+      "kind": "headline",
+      "title": "Profit-taking drags Broad Equity Index lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 2.5,
+      "forecast": 2.4,
+      "prior": 2.3,
+      "surprise": 0.1,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 132,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 140,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 145,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.3,
+      "forecast": 3.4,
+      "prior": 3.3,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 149,
+      "kind": "headline",
+      "title": "Caution weighs on Broad Equity Index into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 153,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 157,
+      "kind": "headline",
+      "title": "Broad Equity Index catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.8,
+      "forecast": 2.9,
+      "prior": 2.8,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 169,
+      "kind": "headline",
+      "title": "Broad Equity Index slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 180,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Broad Equity Index into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 184,
+      "kind": "headline",
+      "title": "Profit-taking drags Broad Equity Index lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.1,
+      "forecast": 3.4,
+      "prior": 3.3,
+      "surprise": -0.3,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 200,
+      "kind": "headline",
+      "title": "Broad Equity Index slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 205,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 207,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.2,
+      "forecast": 2.4,
+      "prior": 2.3,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 211,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Broad Equity Index under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.0,
+      "forecast": 2.3,
+      "prior": 2.2,
+      "surprise": -0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 234,
+      "kind": "headline",
+      "title": "Dip-buyers reward Broad Equity Index after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 239,
+      "kind": "headline",
+      "title": "Broad Equity Index rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 3.2,
+      "unemployment": 4.3,
+      "fed_funds": 4.4,
+      "ten_year": 2.8
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 2.5,
+      "unemployment": 3.2,
+      "fed_funds": 4.2,
+      "ten_year": 4.8
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 3.4,
+      "unemployment": 3.6,
+      "fed_funds": 5.1,
+      "ten_year": 5.0
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 3.5,
+      "unemployment": 4.0,
+      "fed_funds": 3.6,
+      "ten_year": 2.8
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 2.4,
+      "unemployment": 3.9,
+      "fed_funds": 4.1,
+      "ten_year": 3.0
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 4.1,
+      "unemployment": 4.0,
+      "fed_funds": 5.1,
+      "ten_year": 2.8
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 4.1,
+      "unemployment": 3.4,
+      "fed_funds": 5.2,
+      "ten_year": 3.3
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 2.8,
+      "unemployment": 3.3,
+      "fed_funds": 3.5,
+      "ten_year": 3.0
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 3.4,
+      "unemployment": 4.0,
+      "fed_funds": 5.3,
+      "ten_year": 3.0
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 2.4,
+      "unemployment": 3.3,
+      "fed_funds": 4.8,
+      "ten_year": 4.3
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 2.7,
+      "unemployment": 3.4,
+      "fed_funds": 4.0,
+      "ten_year": 2.9
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 2.4,
+      "unemployment": 3.9,
+      "fed_funds": 4.4,
+      "ten_year": 3.3
+    }
+  ],
+  "meta": {
+    "sector": "Broad Equity Index",
+    "bars": 252
+  }
+}

@@ -39,6 +39,12 @@ export interface OpenOrder {
   size: number;
   type: OrderType | string;
   price?: number;
+  // Bracket-order extras (TP/SL legs). `group` links OCO siblings to their entry.
+  tp?: number; // take-profit price (on the entry order, before it fills)
+  sl?: number; // stop-loss price (on the entry order, before it fills)
+  group?: number | string;
+  reduceOnly?: boolean;
+  kind?: 'tp' | 'sl' | string; // bracket leg role, when this order IS a TP/SL leg
 }
 
 export interface PlayerState {
@@ -50,6 +56,32 @@ export interface PlayerState {
   tb: number; // tempo bar resource 0..100
   positions: Position[];
   orders: OpenOrder[];
+  buyingPower?: number; // max gross exposure (equity * leverage)
+  exposure?: number; // current gross exposure (sum |size|)
+}
+
+// A normalized news / economic-calendar item (anti-cheat: Sim Day only, sector labels).
+export interface NewsItem {
+  t: number; // Sim Day
+  kind: 'headline' | 'calendar' | string;
+  title: string;
+  sentiment?: 'bullish' | 'bearish' | 'neutral' | string;
+  importance?: 'low' | 'medium' | 'high' | string;
+  // calendar-only
+  name?: string;
+  actual?: number;
+  forecast?: number;
+  prior?: number;
+  surprise?: number;
+}
+
+// Macro indicator snapshot shown in the IndicatorPanel.
+export interface Indicators {
+  t?: number;
+  cpi_yoy?: number;
+  unemployment?: number;
+  fed_funds?: number;
+  ten_year?: number;
 }
 
 export interface Fill {
@@ -106,6 +138,15 @@ export interface MatchEndResult {
   players: Record<string, PlayerState>;
   you: string;
   contentHash?: string;
+  reveal?: MatchReveal; // post-match: real ticker/dates (hidden during play)
+}
+
+// Post-match reveal of what the obfuscated arena actually was.
+export interface MatchReveal {
+  ticker?: string;
+  start_date?: string;
+  end_date?: string;
+  sector?: string;
 }
 
 // Info returned by POST /matches (or constructed for a join).
@@ -118,4 +159,6 @@ export interface MatchInfo {
   numBars?: number;
   wsUrl: string;
   you: string;
+  bot?: boolean; // quick-match vs-bot fallback
+  sector?: string;
 }

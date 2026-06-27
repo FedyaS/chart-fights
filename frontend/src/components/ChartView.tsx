@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useReplayController, type ReplayController } from '../hooks/useReplayController';
+import { DrawingLayer } from './DrawingLayer';
 
 interface ChartViewProps {
   onControllerReady?: (ctrl: ReplayController) => void;
@@ -30,6 +31,7 @@ export function ChartView({ onControllerReady, R = 1, contested = false, T = 0, 
   return (
     <div className="chart-container rounded relative">
       <div ref={containerRef} className="w-full" style={{ minHeight: 420 }} />
+      <DrawingLayer ctrl={ctrl} containerRef={containerRef} />
       <div className="absolute top-2 left-2 flex items-center gap-2 bg-[#0a0c10]/85 px-2.5 py-1 rounded border border-[#2a313a]">
         <span className="text-[10px] uppercase tracking-widest text-[#6b7280]">Market Speed</span>
         <span className="text-sm font-semibold font-mono" style={{ color: speedColor }}>{speedLabel}</span>

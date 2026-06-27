@@ -1,0 +1,527 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Dip-buyers reward Real Estate after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 6,
+      "kind": "headline",
+      "title": "Caution weighs on Real Estate into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 8,
+      "kind": "headline",
+      "title": "Real Estate rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 10,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.4,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 35,
+      "kind": "headline",
+      "title": "Profit-taking drags Real Estate lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.1,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 49,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 54,
+      "kind": "headline",
+      "title": "Real Estate slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 60,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 61,
+      "kind": "headline",
+      "title": "Dip-buyers reward Real Estate after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.4,
+      "forecast": 3.4,
+      "prior": 3.3,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 69,
+      "kind": "headline",
+      "title": "Real Estate slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 70,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 75,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 3.4,
+      "forecast": 3.2,
+      "prior": 3.1,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 89,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 90,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Real Estate rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 95,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Profit-taking drags Real Estate lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 98,
+      "kind": "headline",
+      "title": "Real Estate slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 100,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 104,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.8,
+      "forecast": 3.8,
+      "prior": 3.7,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Profit-taking drags Real Estate lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 110,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 111,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 114,
+      "kind": "headline",
+      "title": "Dip-buyers reward Real Estate after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 118,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 3.4,
+      "forecast": 3.5,
+      "prior": 3.4,
+      "surprise": -0.1,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 136,
+      "kind": "headline",
+      "title": "Profit-taking drags Real Estate lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 140,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.2,
+      "forecast": 2.0,
+      "prior": 1.9,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 154,
+      "kind": "headline",
+      "title": "Caution weighs on Real Estate into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 157,
+      "kind": "headline",
+      "title": "Real Estate rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 159,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 164,
+      "kind": "headline",
+      "title": "Real Estate rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.5,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 169,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 175,
+      "kind": "headline",
+      "title": "Real Estate under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 185,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.4,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 202,
+      "kind": "headline",
+      "title": "Real Estate rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "headline",
+      "title": "Dip-buyers reward Real Estate after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 3.3,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 212,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 222,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Real Estate into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Dip-buyers reward Real Estate after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 225,
+      "kind": "headline",
+      "title": "Profit-taking drags Real Estate lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 230,
+      "kind": "headline",
+      "title": "Real Estate catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.1,
+      "forecast": 3.2,
+      "prior": 3.1,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 2.9,
+      "unemployment": 4.0,
+      "fed_funds": 4.0,
+      "ten_year": 3.2
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 1.7,
+      "unemployment": 4.0,
+      "fed_funds": 4.2,
+      "ten_year": 4.4
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 3.6,
+      "unemployment": 4.7,
+      "fed_funds": 4.0,
+      "ten_year": 4.4
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 3.5,
+      "unemployment": 4.6,
+      "fed_funds": 5.2,
+      "ten_year": 4.3
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 1.6,
+      "unemployment": 4.7,
+      "fed_funds": 5.3,
+      "ten_year": 3.2
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 3.2,
+      "unemployment": 4.4,
+      "fed_funds": 4.7,
+      "ten_year": 3.8
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 2.0,
+      "unemployment": 4.8,
+      "fed_funds": 4.0,
+      "ten_year": 4.2
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 1.8,
+      "unemployment": 4.8,
+      "fed_funds": 3.6,
+      "ten_year": 3.8
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 3.0,
+      "unemployment": 4.6,
+      "fed_funds": 5.2,
+      "ten_year": 3.8
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 1.8,
+      "unemployment": 4.9,
+      "fed_funds": 5.2,
+      "ten_year": 4.5
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 4.2,
+      "unemployment": 3.1,
+      "fed_funds": 3.9,
+      "ten_year": 4.3
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 2.1,
+      "unemployment": 4.2,
+      "fed_funds": 3.8,
+      "ten_year": 3.6
+    }
+  ],
+  "meta": {
+    "sector": "Real Estate",
+    "bars": 252
+  }
+}

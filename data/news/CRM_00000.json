@@ -1,0 +1,653 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 5,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 8,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.0,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 32,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 34,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 35,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 36,
+      "kind": "headline",
+      "title": "Caution weighs on Large-Cap Tech into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.8,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 47,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 54,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 60,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 62,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.9,
+      "forecast": 3.1,
+      "prior": 3.0,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 65,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 69,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 70,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 71,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 73,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 74,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 76,
+      "kind": "headline",
+      "title": "Large-Cap Tech under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 77,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 78,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 82,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 83,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.7,
+      "forecast": 2.9,
+      "prior": 2.8,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Caution weighs on Large-Cap Tech into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 97,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 98,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 99,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 101,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 102,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 103,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.1,
+      "forecast": 2.8,
+      "prior": 2.7,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Profit-taking drags Large-Cap Tech lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 110,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 112,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 114,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 118,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 120,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 3.2,
+      "forecast": 3.2,
+      "prior": 3.1,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 131,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 132,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 134,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 137,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 145,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 146,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.6,
+      "forecast": 2.5,
+      "prior": 2.4,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 152,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Large-Cap Tech into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.1,
+      "forecast": 2.1,
+      "prior": 2.0,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 171,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 184,
+      "kind": "headline",
+      "title": "Large-Cap Tech under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.7,
+      "forecast": 2.8,
+      "prior": 2.7,
+      "surprise": -0.1,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 195,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 202,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.6,
+      "forecast": 2.5,
+      "prior": 2.4,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 221,
+      "kind": "headline",
+      "title": "Large-Cap Tech rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Large-Cap Tech under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 227,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 229,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 230,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.3,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 233,
+      "kind": "headline",
+      "title": "Caution weighs on Large-Cap Tech into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 240,
+      "kind": "headline",
+      "title": "Large-Cap Tech under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 241,
+      "kind": "headline",
+      "title": "Large-Cap Tech slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 242,
+      "kind": "headline",
+      "title": "Dip-buyers reward Large-Cap Tech after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 246,
+      "kind": "headline",
+      "title": "Large-Cap Tech catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 1.9,
+      "unemployment": 3.4,
+      "fed_funds": 5.0,
+      "ten_year": 5.0
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 1.9,
+      "unemployment": 4.0,
+      "fed_funds": 5.3,
+      "ten_year": 5.1
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 1.6,
+      "unemployment": 3.2,
+      "fed_funds": 5.3,
+      "ten_year": 4.3
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 2.3,
+      "unemployment": 4.3,
+      "fed_funds": 4.4,
+      "ten_year": 3.0
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 2.4,
+      "unemployment": 3.0,
+      "fed_funds": 4.5,
+      "ten_year": 3.0
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 2.4,
+      "unemployment": 3.6,
+      "fed_funds": 4.6,
+      "ten_year": 4.8
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 2.8,
+      "unemployment": 4.0,
+      "fed_funds": 4.2,
+      "ten_year": 2.9
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 3.8,
+      "unemployment": 3.9,
+      "fed_funds": 3.8,
+      "ten_year": 3.1
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 2.4,
+      "unemployment": 4.7,
+      "fed_funds": 4.2,
+      "ten_year": 4.1
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 2.8,
+      "unemployment": 3.0,
+      "fed_funds": 5.1,
+      "ten_year": 4.2
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 1.9,
+      "unemployment": 4.2,
+      "fed_funds": 3.5,
+      "ten_year": 3.0
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 3.5,
+      "unemployment": 3.4,
+      "fed_funds": 4.1,
+      "ten_year": 4.1
+    }
+  ],
+  "meta": {
+    "sector": "Large-Cap Tech",
+    "bars": 252
+  }
+}

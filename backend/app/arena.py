@@ -87,6 +87,34 @@ def load_arena_index() -> List[Dict[str, Any]]:
         return json.load(f)
 
 
+# Anti-cheat (#4): the real arena id ("AAPL_00000") embeds the ticker, so it must
+# never reach the client. We expose an opaque, stable ref instead and resolve it
+# back to the real id server-side. The real id stays in `meta` for post-match reveal.
+_REF_SALT = "chart-fights-arena-v1"
+_ref_to_real: Dict[str, str] = {}
+_real_ids: set = set()
+
+
+def arena_ref(real_id: str) -> str:
+    return hashlib.sha256((_REF_SALT + real_id).encode("utf-8")).hexdigest()[:12]
+
+
+def _ensure_ref_map() -> None:
+    if _real_ids:
+        return
+    for m in load_arena_index():
+        _real_ids.add(m["id"])
+        _ref_to_real[arena_ref(m["id"])] = m["id"]
+
+
+def resolve_arena_ref(token: str) -> str:
+    """Map an opaque ref (or a raw real id) to the real arena id."""
+    _ensure_ref_map()
+    if token in _real_ids:
+        return token
+    return _ref_to_real.get(token, token)
+
+
 def normalize_to_p0_100(df: pd.DataFrame) -> pd.DataFrame:
     if len(df) == 0:
         return df
@@ -181,18 +209,19 @@ def load_arena(arena_id: str, normalize: bool = True) -> Dict[str, Any]:
         return _arena_cache[arena_id]
 
     index = load_arena_index()
-    meta = next((m for m in index if m["id"] == arena_id), None)
+    real_id = resolve_arena_ref(arena_id)
+    meta = next((m for m in index if m["id"] == real_id), None)
     if meta is None:
         raise ValueError(f"Arena {arena_id} not found in index")
 
-    file_rel = meta.get("file", f"data/arenas/{arena_id}.parquet").replace("\\", "/")
+    file_rel = meta.get("file", f"data/arenas/{real_id}.parquet").replace("\\", "/")
     if not file_rel.startswith("data/"):
-        file_rel = f"data/arenas/{arena_id}.parquet"
+        file_rel = f"data/arenas/{real_id}.parquet"
     parquet_path = DATA_ROOT.parent / file_rel
     if not parquet_path.exists():
-        parquet_path = ARENAS_DIR / f"{arena_id}.parquet"
+        parquet_path = ARENAS_DIR / f"{real_id}.parquet"
     if not parquet_path.exists():
-        raise FileNotFoundError(f"Parquet not found for {arena_id}")
+        raise FileNotFoundError(f"Parquet not found for {real_id}")
 
     df = pd.read_parquet(parquet_path)
     if normalize:
@@ -212,15 +241,16 @@ def load_arena(arena_id: str, normalize: bool = True) -> Dict[str, Any]:
     ticker = meta.get("ticker", "UNKNOWN")
     sector = sector_label(ticker)
     cls = asset_class(ticker)
-    generic_label = f"{sector} · {codename_for(arena_id)}"
+    generic_label = f"{sector} · {codename_for(real_id)}"
     arena_hash = compute_arena_hash(bars)
 
-    news = load_news(arena_id)
+    news = load_news(real_id)
     if not news.get("feed"):
-        news = procedural_feed(bars, ticker, arena_id)
+        news = procedural_feed(bars, ticker, real_id)
 
     result = {
-        "id": arena_id,
+        "id": arena_ref(real_id),     # opaque public ref — never the ticker-bearing real id
+        "real_id": real_id,           # internal use only; never put in client payloads pre-match
         "meta": meta,                 # contains real ticker/dates -> post-match reveal only
         "bars": bars,
         "hash": arena_hash,
@@ -248,7 +278,7 @@ def get_available_arenas(limit: int = 20) -> List[Dict[str, Any]]:
             seen.add(m["ticker"])
             aid = m["id"]
             out.append({
-                "id": aid,
+                "id": arena_ref(aid),  # opaque ref, not the ticker-bearing real id
                 "label": f"{sector_label(m['ticker'])} · {codename_for(aid)}",
                 "sector": sector_label(m["ticker"]),
                 "asset_class": asset_class(m["ticker"]),

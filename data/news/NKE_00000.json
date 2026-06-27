@@ -1,0 +1,625 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 8,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 10,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 17,
+      "kind": "headline",
+      "title": "Profit-taking drags Consumer Discretionary lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 20,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.5,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 28,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 32,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 38,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 40,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 3.7,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 47,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 51,
+      "kind": "headline",
+      "title": "Consumer Discretionary under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Profit-taking drags Consumer Discretionary lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 53,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "headline",
+      "title": "Profit-taking drags Consumer Discretionary lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.9,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": -0.1,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 64,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 65,
+      "kind": "headline",
+      "title": "Consumer Discretionary slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 66,
+      "kind": "headline",
+      "title": "Consumer Discretionary slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "headline",
+      "title": "Consumer Discretionary under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.4,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 85,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 88,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Consumer Discretionary under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 101,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.7,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 110,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 112,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 113,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 114,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 118,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 123,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 2.3,
+      "forecast": 2.5,
+      "prior": 2.4,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 131,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 132,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 134,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 140,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.7,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 156,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 157,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 158,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 165,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 166,
+      "kind": "headline",
+      "title": "Profit-taking drags Consumer Discretionary lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.2,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 172,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 183,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 185,
+      "kind": "headline",
+      "title": "Caution weighs on Consumer Discretionary into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 186,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Consumer Discretionary into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 187,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "headline",
+      "title": "Consumer Discretionary rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.0,
+      "forecast": 2.7,
+      "prior": 2.6,
+      "surprise": 0.3,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 202,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 4.0,
+      "forecast": 3.8,
+      "prior": 3.7,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 223,
+      "kind": "headline",
+      "title": "Consumer Discretionary under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Profit-taking drags Consumer Discretionary lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 228,
+      "kind": "headline",
+      "title": "Consumer Discretionary catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.1,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 235,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 238,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 244,
+      "kind": "headline",
+      "title": "Consumer Discretionary slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 245,
+      "kind": "headline",
+      "title": "Consumer Discretionary slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 246,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 248,
+      "kind": "headline",
+      "title": "Dip-buyers reward Consumer Discretionary after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 3.9,
+      "unemployment": 4.0,
+      "fed_funds": 4.9,
+      "ten_year": 4.6
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 2.1,
+      "unemployment": 4.7,
+      "fed_funds": 4.1,
+      "ten_year": 3.8
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 3.4,
+      "unemployment": 3.9,
+      "fed_funds": 4.8,
+      "ten_year": 3.5
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 3.8,
+      "unemployment": 4.9,
+      "fed_funds": 4.4,
+      "ten_year": 4.8
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 4.3,
+      "unemployment": 3.6,
+      "fed_funds": 4.9,
+      "ten_year": 4.0
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 4.3,
+      "unemployment": 3.6,
+      "fed_funds": 3.5,
+      "ten_year": 4.4
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 1.8,
+      "unemployment": 4.5,
+      "fed_funds": 5.0,
+      "ten_year": 4.5
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 3.0,
+      "unemployment": 4.0,
+      "fed_funds": 5.2,
+      "ten_year": 3.4
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 4.0,
+      "unemployment": 3.4,
+      "fed_funds": 4.4,
+      "ten_year": 3.6
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 3.4,
+      "unemployment": 3.0,
+      "fed_funds": 4.8,
+      "ten_year": 5.0
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 2.4,
+      "unemployment": 4.3,
+      "fed_funds": 4.4,
+      "ten_year": 4.5
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 2.9,
+      "unemployment": 4.8,
+      "fed_funds": 3.8,
+      "ten_year": 3.2
+    }
+  ],
+  "meta": {
+    "sector": "Consumer Discretionary",
+    "bars": 252
+  }
+}

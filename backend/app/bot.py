@@ -53,14 +53,14 @@ class BotTrader:
             return 0.0
 
     async def run(self) -> None:
-        # let a couple of bars reveal before trading
-        await asyncio.sleep(2.0)
+        # let a bar or two reveal before trading
+        await asyncio.sleep(1.0)
         while self.engine.state._active and not self.engine.state.is_over():
             try:
                 self._step()
             except Exception:
                 pass
-            await asyncio.sleep(self.rng.uniform(2.0, 4.5))
+            await asyncio.sleep(self.rng.uniform(1.5, 3.0))
 
     def _step(self) -> None:
         st = self.engine.state
@@ -79,7 +79,7 @@ class BotTrader:
             return
 
         # No position: lean into short-term momentum.
-        if len(self._recent) < 3:
+        if len(self._recent) < 2:
             return
         trend = self._recent[-1] - self._recent[0]
         if abs(trend) < close * 0.001 and self.rng.random() < 0.5:

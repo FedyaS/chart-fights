@@ -5,7 +5,10 @@ import { ArenaLobby } from '../components/ArenaLobby';
 import { ChartView } from '../components/ChartView';
 import { ResourceBars } from '../components/ResourceBars';
 import { SaboPanel, type Ability } from '../components/SaboPanel';
-import { OrderPanel } from '../components/OrderPanel';
+import { OrderPanel, type OrderRequest } from '../components/OrderPanel';
+import { PositionsTable } from '../components/PositionsTable';
+import { NewsFeed } from '../components/NewsFeed';
+import { IndicatorPanel } from '../components/IndicatorPanel';
 import { VoicePanel } from '../components/VoicePanel';
 import { EventLog } from '../components/EventLog';
 import { Scoreboard } from '../components/Scoreboard';
@@ -15,11 +18,11 @@ import { useVoiceChat, type VoiceSignalType } from '../hooks/useVoiceChat';
 import type { ReplayController } from '../hooks/useReplayController';
 import {
   toBar, num, parsePlayersMap, applyResources, resolveTempo,
-  parseEvents, parseFills, otherPlayer,
+  parseEvents, parseFills, parseNews, parseIndicators, otherPlayer,
 } from '../lib/matchState';
 import type {
   Arena, Bar, LogEvent, PlayerState, TempoLevel, TempoState,
-  MatchInfo, MatchEndResult, GameEvent,
+  MatchInfo, MatchEndResult, GameEvent, NewsItem, Indicators, MatchReveal,
 } from '../types';
 
 const BACKEND_URL =
@@ -30,6 +33,7 @@ const WS_BASE = BACKEND_URL.replace(/^http/, 'ws');
 
 const STARTING_CAPITAL = 100;
 const OFFLINE_BASE_MS = 900; // 1 day per ~0.9s at R=1 (offline only)
+const MATCH_SECONDS = 300;
 
 const levelToR = (l: TempoLevel): number => (l === 'pause' ? 0 : l === 'ff2' ? 2 : l === 'ff3' ? 3 : l === 'ff5' ? 5 : 1);
 
@@ -39,6 +43,11 @@ const toLogType = (t: string): LogEvent['type'] => (LOG_TYPES.includes(t as any)
 type View = 'lobby' | 'match' | 'ended';
 
 const emptyTempo: TempoState = { R: 1, contested: false, myLevel: 'base' };
+
+function fmtClock(secs: number): string {
+  const s = Math.max(0, Math.floor(secs));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
 
 export default function ChartFightsApp() {
   const [view, setView] = useState<View>('lobby');
@@ -51,10 +60,14 @@ export default function ChartFightsApp() {
   const [mode, setMode] = useState<'server' | 'offline'>('server');
   const [you, setYou] = useState<string>('p1');
   const [T, setT] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(MATCH_SECONDS);
   const [tempo, setTempo] = useState<TempoState>(emptyTempo);
   const [players, setPlayers] = useState<Record<string, PlayerState>>({});
   const [currentBar, setCurrentBar] = useState<Bar | null>(null);
   const [events, setEvents] = useState<LogEvent[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [indicators, setIndicators] = useState<Indicators | null>(null);
+  const [equityCurve, setEquityCurve] = useState<number[]>([]);
   const [endResult, setEndResult] = useState<MatchEndResult | null>(null);
 
   const [joinId, setJoinId] = useState('');
@@ -71,6 +84,9 @@ export default function ChartFightsApp() {
   const modeRef = useRef<'server' | 'offline'>('server');
   const gotSnapshotRef = useRef(false);
   const voiceHandleRef = useRef<((t: VoiceSignalType, p: any) => void) | null>(null);
+  const priceLinesRef = useRef<Set<string>>(new Set());
+  const equityCurveRef = useRef<number[]>([]);
+  const revealRef = useRef<MatchReveal | undefined>(undefined);
 
   // offline simulation refs
   const offlineBarsRef = useRef<Bar[]>([]);
@@ -105,9 +121,9 @@ export default function ChartFightsApp() {
       .then((d) => {
         const list: Arena[] = (d.arenas || []).map((a: any) => ({
           id: a.id,
-          name: `${a.ticker || a.id}`,
-          ticker: a.ticker || a.id,
-          description: `${a.bars ?? '?'} bars${a.start ? ` • from ${a.start}` : ''}`,
+          name: a.label || a.sector || a.id, // sector · codename (no ticker — anti-cheat #4)
+          ticker: a.sector || a.asset_class || 'Equity',
+          description: `${a.asset_class ?? 'Equity'} • ${a.bars ?? '?'} bars`,
           bars: [],
           numBars: a.bars,
         }));
@@ -134,7 +150,6 @@ export default function ChartFightsApp() {
 
   const handleCtrl = useCallback((c: ReplayController) => {
     ctrlRef.current = c;
-    // Replay any already-revealed (past) bars so a late chart mount / reconnect catches up.
     if (revealedBarsRef.current.length) c.setHistory(revealedBarsRef.current);
   }, []);
 
@@ -147,13 +162,34 @@ export default function ChartFightsApp() {
     offlineRealizedRef.current = 0;
     gotSnapshotRef.current = false;
     myLevelRef.current = 'base';
+    priceLinesRef.current = new Set();
+    equityCurveRef.current = [];
+    revealRef.current = undefined;
+    ctrlRef.current?.clearPriceLines();
     setPlayers({});
     setCurrentBar(null);
     setEvents([]);
+    setNews([]);
+    setIndicators(null);
+    setEquityCurve([]);
     setEndResult(null);
     setT(0);
+    setTimeLeft(MATCH_SECONDS);
     setTempo(emptyTempo);
   }, []);
+
+  // split raw events into news (own panel) + everything else (log)
+  const ingestEvents = useCallback((rawEvents: any) => {
+    const arr = Array.isArray(rawEvents) ? rawEvents : [];
+    const newsRaw = arr.filter((e: any) => e?.type === 'news');
+    const otherRaw = arr.filter((e: any) => e?.type !== 'news');
+    if (newsRaw.length) setNews((prev) => [...prev, ...parseNews(newsRaw)].slice(-100));
+    const evs = parseEvents(otherRaw);
+    for (const e of evs) {
+      addLog(toLogType(e.type), e.message, e.t);
+      if (e.type === 'sabo' && currentBarRef.current) ctrlRef.current?.addSaboMarker(currentBarRef.current, e.ability ?? 'hit');
+    }
+  }, [addLog]);
 
   // ---- WS message handling ---------------------------------------------
   const handleMessage = useCallback((msg: any) => {
@@ -174,9 +210,13 @@ export default function ChartFightsApp() {
 
       setTempo(resolveTempo(st.tb, st.r ?? msg.r, yid, myLevelRef.current));
       setT(num(st.T ?? msg.t ?? bar?.time ?? 0));
+      if (st.time_left != null) setTimeLeft(num(st.time_left));
+      if (st.indicators) setIndicators(parseIndicators(st.indicators));
 
-      const evs = parseEvents(st.recent_events);
-      setEvents(evs.map((e) => toLog(e)).slice(-60));
+      // initial recent_events: news to panel, rest to log
+      const recent = Array.isArray(st.recent_events) ? st.recent_events : [];
+      setNews(parseNews(recent.filter((e: any) => e?.type === 'news')));
+      setEvents(parseEvents(recent.filter((e: any) => e?.type !== 'news')).map((e) => toLog(e)).slice(-60));
       return;
     }
 
@@ -191,6 +231,8 @@ export default function ChartFightsApp() {
 
       setTempo(resolveTempo(msg.tb, msg.r, youRef.current, myLevelRef.current));
       setT(num(msg.t ?? bar?.time ?? 0));
+      if (msg.time_left != null) setTimeLeft(num(msg.time_left));
+      if (msg.indicators) setIndicators(parseIndicators(msg.indicators));
 
       const fills = parseFills(msg.fills);
       for (const f of fills) {
@@ -200,11 +242,7 @@ export default function ChartFightsApp() {
         addLog('fill', `${who} ${String(f.side).toUpperCase()} ${f.size} @ ${f.price.toFixed(2)} (${f.type})`, f.t);
       }
 
-      const evs = parseEvents(msg.events);
-      for (const e of evs) {
-        addLog(toLogType(e.type), e.message, e.t);
-        if (e.type === 'sabo' && currentBarRef.current) ctrlRef.current?.addSaboMarker(currentBarRef.current, e.ability ?? 'hit');
-      }
+      ingestEvents(msg.events);
       return;
     }
 
@@ -215,7 +253,7 @@ export default function ChartFightsApp() {
       if (Object.keys(finalPlayers).length === 0) finalPlayers = playersRef.current;
       const yid = youRef.current;
       const winner = resolveWinner(msg.winner ?? fin.winner, finalPlayers, yid);
-      setEndResult({ winner, players: finalPlayers, you: yid, contentHash: msg.content_hash });
+      setEndResult({ winner, players: finalPlayers, you: yid, contentHash: msg.content_hash, reveal: msg.reveal });
       setView('ended');
       closeWs();
       return;
@@ -226,7 +264,7 @@ export default function ChartFightsApp() {
       return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addLog, pushBarToChart]);
+  }, [addLog, pushBarToChart, ingestEvents]);
 
   const toLog = useCallback((e: GameEvent): LogEvent => ({
     t: Math.round(e.t ?? currentBarRef.current?.time ?? 0),
@@ -248,7 +286,7 @@ export default function ChartFightsApp() {
     try {
       const ws = new WebSocket(info.wsUrl);
       wsRef.current = ws;
-      ws.onopen = () => addLog('info', `Connected to match ${info.matchId} as ${info.you}`);
+      ws.onopen = () => addLog('info', `Connected to match ${info.matchId} as ${info.you}${info.bot ? ' (vs bot)' : ''}`);
       ws.onmessage = (ev) => { try { handleMessage(JSON.parse(ev.data)); } catch {} };
       ws.onerror = () => addLog('info', 'WS error');
       ws.onclose = () => {
@@ -268,7 +306,23 @@ export default function ChartFightsApp() {
     return SAMPLE_ARENAS.find((a) => a.id === arenaId) ?? SAMPLE_ARENAS[0];
   }, []);
 
+  const sectorOf = (info: MatchInfo | null): string =>
+    info?.sector ?? (info?.arenaLabel ? info.arenaLabel.split(' · ')[0] : 'Asset');
+
   // ---- create / join ----------------------------------------------------
+  const infoFromResp = useCallback((data: any, fallbackArenaId?: string): MatchInfo => ({
+    matchId: data.match_id,
+    arenaId: data.arena_id ?? fallbackArenaId ?? '',
+    arenaLabel: data.arena_label ?? 'Arena',
+    arenaHash: data.arena_hash,
+    contentHash: data.content_hash,
+    numBars: data.num_bars,
+    wsUrl: `${WS_BASE}/ws/${data.match_id}?player_id=p1`,
+    you: 'p1',
+    bot: !!data.bot,
+    sector: (data.arena_label ?? '').split(' · ')[0] || undefined,
+  }), []);
+
   const createMatch = useCallback(async (arena: Arena) => {
     setSelectedArenaId(arena.id);
     setConnecting(true);
@@ -280,18 +334,7 @@ export default function ChartFightsApp() {
         body: JSON.stringify({ arena_id: arena.id, player_ids: ['p1', 'p2'] }),
       });
       if (!resp.ok) throw new Error(`POST /matches ${resp.status}`);
-      const data = await resp.json();
-      const info: MatchInfo = {
-        matchId: data.match_id,
-        arenaId: data.arena_id ?? arena.id,
-        arenaLabel: data.arena_label ?? arena.name,
-        arenaHash: data.arena_hash,
-        contentHash: data.content_hash,
-        numBars: data.num_bars ?? arena.numBars,
-        wsUrl: `${WS_BASE}/ws/${data.match_id}?player_id=p1`,
-        you: 'p1',
-      };
-      connectWs(info);
+      connectWs(infoFromResp(await resp.json(), arena.id));
     } catch {
       addLog('info', 'Backend not reachable — starting offline practice match');
       startOffline(arena);
@@ -299,20 +342,38 @@ export default function ChartFightsApp() {
       setConnecting(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectWs, resetMatchState, addLog]);
+  }, [connectWs, resetMatchState, addLog, infoFromResp]);
+
+  const quickMatch = useCallback(async () => {
+    setConnecting(true);
+    resetMatchState();
+    try {
+      const resp = await fetch(`${BACKEND_URL}/matches/quick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vs_bot: true }),
+      });
+      if (!resp.ok) throw new Error(`POST /matches/quick ${resp.status}`);
+      const data = await resp.json();
+      setSelectedArenaId(data.arena_id);
+      connectWs(infoFromResp(data));
+    } catch {
+      addLog('info', 'Backend not reachable — starting offline practice match');
+      startOffline(SAMPLE_ARENAS[Math.floor(Date.now() / 1000) % SAMPLE_ARENAS.length]);
+    } finally {
+      setConnecting(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectWs, resetMatchState, addLog, infoFromResp]);
 
   const joinExisting = useCallback(() => {
     const id = joinId.trim();
     if (!id) return;
     resetMatchState();
-    const info: MatchInfo = {
-      matchId: id,
-      arenaId: '',
-      arenaLabel: `Match ${id}`,
-      wsUrl: `${WS_BASE}/ws/${id}?player_id=${joinAs}`,
-      you: joinAs,
-    };
-    connectWs(info);
+    connectWs({
+      matchId: id, arenaId: '', arenaLabel: `Match ${id}`,
+      wsUrl: `${WS_BASE}/ws/${id}?player_id=${joinAs}`, you: joinAs,
+    });
   }, [joinId, joinAs, connectWs, resetMatchState]);
 
   // ---- offline practice simulation -------------------------------------
@@ -325,11 +386,11 @@ export default function ChartFightsApp() {
     offlineIdxRef.current = 0;
     const first = bars[0];
     const initPlayers: Record<string, PlayerState> = {
-      p1: { id: 'p1', ip: 50, equity: STARTING_CAPITAL, pnl: 0, unrealized: 0, tb: 100, positions: [], orders: [] },
+      p1: { id: 'p1', ip: 50, equity: STARTING_CAPITAL, pnl: 0, unrealized: 0, tb: 100, positions: [], orders: [], buyingPower: 300, exposure: 0 },
       p2: { id: 'p2', ip: 50, equity: STARTING_CAPITAL, pnl: 0, unrealized: 0, tb: 100, positions: [], orders: [] },
     };
     playersRef.current = initPlayers; setPlayers(initPlayers);
-    setMatchInfo({ matchId: 'offline', arenaId: arena.id, arenaLabel: arena.name, wsUrl: '', you: 'p1', numBars: bars.length });
+    setMatchInfo({ matchId: 'offline', arenaId: arena.id, arenaLabel: arena.name, wsUrl: '', you: 'p1', numBars: bars.length, sector: arena.ticker });
     setTempo({ R: 1, contested: false, myLevel: 'base' });
     setView('match');
     if (first) pushBarToChart(first);
@@ -347,10 +408,11 @@ export default function ChartFightsApp() {
       }, 0);
       const equity = STARTING_CAPITAL + offlineRealizedRef.current + unreal;
       const ip = Math.min(200, base.ip + 0.5);
+      const exposure = base.positions.reduce((a, p) => a + Math.abs(p.size), 0);
       const first = offlineBarsRef.current[0]?.close ?? bar.close;
       const oppEquity = STARTING_CAPITAL + ((bar.close / first) - 1) * 100 * 0.6;
       const next: Record<string, PlayerState> = {
-        p1: { ...base, ip, unrealized: unreal, equity, pnl: equity - STARTING_CAPITAL },
+        p1: { ...base, ip, unrealized: unreal, equity, pnl: equity - STARTING_CAPITAL, exposure, buyingPower: Math.max(0, equity * 3) },
         p2: { ...(prev.p2 ?? playersRef.current.p2), id: 'p2', equity: oppEquity, pnl: oppEquity - STARTING_CAPITAL, unrealized: 0, positions: [], orders: [], ip: 50, tb: 100 },
       };
       playersRef.current = next;
@@ -383,12 +445,49 @@ export default function ChartFightsApp() {
     return () => clearInterval(id);
   }, [view, mode, tempo.R, pushBarToChart, recomputeOfflinePlayers, endOffline]);
 
+  // ---- equity curve sampling -------------------------------------------
+  useEffect(() => {
+    if (view !== 'match') return;
+    const eq = players[you]?.equity;
+    if (eq == null) return;
+    const arr = equityCurveRef.current;
+    if (arr.length === 0 || Math.abs(arr[arr.length - 1] - eq) > 1e-6) {
+      equityCurveRef.current = [...arr, eq].slice(-120);
+      setEquityCurve(equityCurveRef.current);
+    }
+  }, [players, you, view]);
+
+  // ---- TP/SL/entry price lines on the chart ----------------------------
+  useEffect(() => {
+    const ctrl = ctrlRef.current;
+    if (!ctrl || view !== 'match') return;
+    const me = players[you];
+    const desired = new Map<string, { price: number; color: string; title: string }>();
+    if (me) {
+      for (const pos of me.positions) {
+        if (pos.entry) desired.set(`entry:${pos.instr}`, { price: pos.entry, color: '#6b7280', title: `Entry ${pos.entry.toFixed(2)}` });
+      }
+      for (const o of me.orders) {
+        const isTp = o.kind === 'tp' || (o.reduceOnly && o.type === 'limit');
+        const isSl = o.kind === 'sl' || (o.reduceOnly && o.type === 'stop');
+        if (isTp && o.price != null) desired.set(`tp:${o.id}`, { price: o.price, color: '#22c55e', title: `TP ${o.price.toFixed(2)}` });
+        else if (isSl && o.price != null) desired.set(`sl:${o.id}`, { price: o.price, color: '#ef4444', title: `SL ${o.price.toFixed(2)}` });
+        else if (o.price != null) desired.set(`ord:${o.id}`, { price: o.price, color: '#3b82f6', title: `${String(o.type).toUpperCase()} ${o.price.toFixed(2)}` });
+        if (o.tp != null) desired.set(`tpp:${o.id}`, { price: o.tp, color: '#22c55e', title: `TP ${o.tp.toFixed(2)}` });
+        if (o.sl != null) desired.set(`slp:${o.id}`, { price: o.sl, color: '#ef4444', title: `SL ${o.sl.toFixed(2)}` });
+      }
+    }
+    const prev = priceLinesRef.current;
+    for (const id of prev) if (!desired.has(id)) ctrl.removePriceLine(id);
+    for (const [id, v] of desired) ctrl.addPriceLine(v.price, v.title, v.color, id);
+    priceLinesRef.current = new Set(desired.keys());
+  }, [players, you, currentBar, view]);
+
   // ---- player actions ---------------------------------------------------
   const handleTempo = useCallback((level: TempoLevel) => {
     myLevelRef.current = level;
     if (modeRef.current === 'server') {
       sendWSAction('tb_influence', { level });
-      // optimistic: reflect own intent; server reconciles resolved R via deltas
       setTempo((prev) => ({ ...prev, myLevel: level, R: prev.contested ? prev.R : levelToR(level) }));
     } else {
       setTempo({ R: levelToR(level), contested: false, myLevel: level });
@@ -401,19 +500,17 @@ export default function ChartFightsApp() {
     return o?.id ?? (youRef.current === 'p1' ? 'p2' : 'p1');
   }, []);
 
-  const handleOrder = useCallback((ord: { type: any; side: any; size: number; price?: number }) => {
+  const handleOrder = useCallback((ord: OrderRequest) => {
     const bar = currentBarRef.current;
     const fillPrice = ord.price ?? bar?.close ?? 100;
     if (modeRef.current === 'server') {
       sendWSAction('submit_order', {
-        type: ord.type,
-        instr: 'X',
-        side: ord.side,
-        size: ord.size,
+        type: ord.type, instr: 'X', side: ord.side, size: ord.size,
         ...(ord.price != null ? { price: ord.price } : {}),
+        ...(ord.tp != null ? { tp: ord.tp } : {}),
+        ...(ord.sl != null ? { sl: ord.sl } : {}),
       });
     }
-    // optimistic local feedback (server reconciles on next delta/snapshot)
     if (bar) ctrlRef.current?.addFillMarker(bar, ord.side, youRef.current, youRef.current, `${ord.side === 'long' ? 'BUY' : 'SELL'} ${ord.size}`);
     if (ord.type === 'market' && bar) {
       setPlayers((prev) => {
@@ -424,7 +521,59 @@ export default function ChartFightsApp() {
         return next;
       });
     }
-    addLog('order', `${String(ord.side).toUpperCase()} ${ord.size} ${ord.type} @ ~${fillPrice.toFixed(2)}`);
+    addLog('order', `${String(ord.side).toUpperCase()} ${ord.size} ${ord.type} @ ~${fillPrice.toFixed(2)}${ord.tp || ord.sl ? ' +bracket' : ''}`);
+  }, [sendWSAction, addLog]);
+
+  const handleClose = useCallback((instr: string, fraction: number) => {
+    if (modeRef.current === 'server') {
+      sendWSAction('close', { instr, fraction });
+    } else {
+      // offline: realize a fraction and shrink/remove the local position
+      setPlayers((prev) => {
+        const me = prev[youRef.current];
+        if (!me) return prev;
+        const bar = currentBarRef.current;
+        const positions = me.positions.flatMap((p) => {
+          if (p.instr !== instr) return [p];
+          const dir = p.side === 'long' ? 1 : -1;
+          const up = p.entry && bar ? p.size * dir * (bar.close - p.entry) / p.entry : 0;
+          offlineRealizedRef.current += up * fraction;
+          const remaining = p.size * (1 - fraction);
+          return remaining > 0.0001 ? [{ ...p, size: remaining }] : [];
+        });
+        const next = { ...prev, [youRef.current]: { ...me, positions } };
+        playersRef.current = next;
+        return next;
+      });
+    }
+    addLog('order', `Close ${fraction >= 1 ? 'all' : `${Math.round(fraction * 100)}%`} ${instr}`);
+  }, [sendWSAction, addLog]);
+
+  const handleSetBracketLeg = useCallback((instr: string, kind: 'tp' | 'sl', price: number) => {
+    const me = playersRef.current[youRef.current];
+    const existing = me?.orders.find((o) => o.instr === instr && (o.kind === kind || (o.reduceOnly && o.type === (kind === 'tp' ? 'limit' : 'stop'))));
+    const pos = me?.positions.find((p) => p.instr === instr);
+    if (modeRef.current === 'server') {
+      if (existing?.id != null) {
+        sendWSAction('modify_order', { id: existing.id, price });
+      } else if (pos) {
+        // create a fresh reduce-only-style leg opposite the position
+        const exitSide = (pos.side === 'long') ? 'short' : 'long';
+        sendWSAction('submit_order', { type: kind === 'tp' ? 'limit' : 'stop', instr, side: exitSide, size: Math.abs(pos.size), price });
+      }
+    }
+    addLog('order', `Set ${kind.toUpperCase()} ${instr} @ ${price.toFixed(2)}`);
+  }, [sendWSAction, addLog]);
+
+  const handleCancelOrder = useCallback((id: string) => {
+    if (modeRef.current === 'server') sendWSAction('cancel_order', { id });
+    else setPlayers((prev) => {
+      const me = prev[youRef.current];
+      if (!me) return prev;
+      const next = { ...prev, [youRef.current]: { ...me, orders: me.orders.filter((o) => String(o.id) !== id) } };
+      playersRef.current = next; return next;
+    });
+    addLog('order', `Cancel order ${id}`);
   }, [sendWSAction, addLog]);
 
   const handleSabo = useCallback((a: Ability) => {
@@ -432,7 +581,6 @@ export default function ChartFightsApp() {
     if (modeRef.current === 'server') {
       sendWSAction('ip_spend', { cost: a.cost, ability: a.ability, target_player: target });
     }
-    // optimistic IP deduction; server is authoritative and reconciles
     setPlayers((prev) => {
       const me = prev[youRef.current];
       if (!me) return prev;
@@ -458,7 +606,6 @@ export default function ChartFightsApp() {
     const arena = arenas.find((a) => a.id === arenaId) ?? arenaForOffline(arenaId);
     setView('lobby');
     setEndResult(null);
-    // small delay so the chart unmounts cleanly before a fresh match
     setTimeout(() => createMatch(arena), 50);
   }, [matchInfo, arenas, arenaForOffline, createMatch]);
 
@@ -466,6 +613,7 @@ export default function ChartFightsApp() {
   const me = players[you] ?? null;
   const opp = otherPlayer(players, you);
   const lastClose = currentBar?.close ?? 100;
+  const clockColor = timeLeft <= 30 ? '#ef4444' : timeLeft <= 60 ? '#eab308' : '#9ca3af';
 
   return (
     <div className="min-h-screen pvp-container">
@@ -476,9 +624,13 @@ export default function ChartFightsApp() {
             {mode === 'offline' && view !== 'lobby' && <div className="text-[10px] px-2 py-0.5 rounded bg-[#eab308]/10 text-[#eab308]">OFFLINE</div>}
           </div>
           <div className="flex items-center gap-4 text-xs text-[#9ca3af]">
+            {view === 'match' && (
+              <span className="font-mono text-sm font-semibold" style={{ color: clockColor }}>⏱ {fmtClock(timeLeft)}</span>
+            )}
             {view !== 'lobby' && matchInfo && (
               <>
                 <span className="hidden sm:inline">{matchInfo.arenaLabel}</span>
+                {matchInfo.bot && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#3b82f6]/15 text-[#3b82f6]">vs BOT</span>}
                 <span className="font-mono text-[10px] text-[#6b7280]">{matchInfo.matchId}</span>
                 <button onClick={exitToLobby} className="underline">← LOBBY</button>
               </>
@@ -493,6 +645,11 @@ export default function ChartFightsApp() {
             <div className="max-w-2xl">
               <h1 className="text-4xl font-semibold tracking-tighter">1v1 me in stocks bro.</h1>
               <p className="mt-2 text-lg text-[#9ca3af]">Same normalized chart slice. Shared contested clock. Sabotage. Voice. 5 real minutes.</p>
+              <button onClick={quickMatch} disabled={connecting}
+                className={`mt-4 px-5 py-2.5 rounded-lg font-semibold text-black ${connecting ? 'bg-[#272d37] text-[#6b7280] cursor-wait' : 'bg-[#22c55e] hover:bg-[#16a34a]'}`}>
+                ⚡ {connecting ? 'Matching…' : 'Quick Match'}
+              </button>
+              <span className="ml-3 text-xs text-[#6b7280]">random arena · vs bot if no human joins</span>
             </div>
             <ArenaLobby arenas={arenas} onSelect={createMatch} selectedId={selectedArenaId} connecting={connecting} />
             {loadingArenas && <div className="text-xs text-[#6b7280]">Loading arenas from {BACKEND_URL}/arenas…</div>}
@@ -516,7 +673,7 @@ export default function ChartFightsApp() {
             </div>
 
             <div className="text-xs text-[#6b7280] max-w-prose">
-              Backend: {BACKEND_URL}. Uses GET /arenas + POST /matches + native WS. The chart reveals bars only as the server advances T (anti-cheat: no future preload). If the backend is unreachable, an offline practice match runs locally.
+              Backend: {BACKEND_URL}. Instruments are shown by sector only (real symbol revealed post-match). The chart reveals bars as the server advances T. If the backend is unreachable, an offline practice match runs locally.
             </div>
           </div>
         )}
@@ -539,12 +696,22 @@ export default function ChartFightsApp() {
                 </div>
               </div>
               <ChartView onControllerReady={handleCtrl} R={tempo.R} contested={tempo.contested} T={T} paused={tempo.R <= 0} />
+              <IndicatorPanel indicators={indicators} />
+              <NewsFeed items={news} />
             </div>
 
             <div className="lg:col-span-4 space-y-3">
-              <Scoreboard you={me} opp={opp} />
+              <Scoreboard you={me} opp={opp} curve={equityCurve} />
               <ResourceBars tb={me?.tb ?? 100} ip={me?.ip ?? 0} R={tempo.R} contested={tempo.contested} myLevel={tempo.myLevel} onTempo={handleTempo} />
-              <OrderPanel onPlaceOrder={handleOrder} currentPrice={lastClose} />
+              <OrderPanel onPlaceOrder={handleOrder} currentPrice={lastClose} buyingPower={me?.buyingPower} exposure={me?.exposure} />
+              <PositionsTable
+                me={me}
+                markPrice={lastClose}
+                sector={sectorOf(matchInfo)}
+                onClose={handleClose}
+                onSetBracketLeg={handleSetBracketLeg}
+                onCancelOrder={handleCancelOrder}
+              />
               <SaboPanel ip={me?.ip ?? 0} onCast={handleSabo} />
               <VoicePanel status={voice.status} micOn={voice.micOn} remoteActive={voice.remoteActive} errorMsg={voice.errorMsg} onStart={voice.start} onStop={voice.stop} onToggleMic={voice.toggleMic} />
               <EventLog events={events} />
@@ -558,7 +725,7 @@ export default function ChartFightsApp() {
       </main>
 
       <footer className="text-center text-[10px] py-6 text-[#6b7280] border-t border-[#2a313a]">
-        chart-fights • progressive server-revealed chart • TB/IP/sabotage/voice • GDD + task-007/002/003/004
+        chart-fights • progressive server-revealed chart • TB/IP/sabotage/voice • brackets · drawings · news
       </footer>
     </div>
   );

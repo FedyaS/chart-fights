@@ -254,7 +254,8 @@ class MatchState:
     """Holds full authoritative state. Uses SharedClock for T/R/bar."""
     def __init__(self, match_id: str, arena_id: str, arena_data: Dict[str, Any]):
         self.match_id = match_id
-        self.arena_id = arena_id
+        # Public, opaque arena id (never the ticker-bearing real id) for client payloads.
+        self.arena_id = arena_data.get("id", arena_id)
         self.arena_hash = arena_data["hash"]
         self.content_hash = arena_data.get("content_hash", arena_data["hash"])
         self.label = arena_data["label"]

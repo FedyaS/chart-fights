@@ -90,7 +90,8 @@ async def create_match(req: CreateMatchReq):
         match_id, arena = _new_match(req.arena_id, req.player_ids)
     except Exception as e:
         raise HTTPException(400, f"Invalid arena: {e}")
-    return CreateMatchResp(match_id=match_id, arena_id=req.arena_id, arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}")
+    # arena["id"] is the opaque ref (never the ticker-bearing real id) — safe to return.
+    return CreateMatchResp(match_id=match_id, arena_id=arena["id"], arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}")
 
 
 @app.post("/matches/quick", response_model=CreateMatchResp)
@@ -103,7 +104,7 @@ async def quick_match(req: QuickMatchReq | None = None):
         raise HTTPException(500, "no arenas available")
     arena_id = random.choice(idx)["id"]
     match_id, arena = _new_match(arena_id, ["p1", "p2"], bot=req.vs_bot)
-    return CreateMatchResp(match_id=match_id, arena_id=arena_id, arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}", bot=req.vs_bot)
+    return CreateMatchResp(match_id=match_id, arena_id=arena["id"], arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}", bot=req.vs_bot)
 
 
 @app.get("/matches/{match_id}")

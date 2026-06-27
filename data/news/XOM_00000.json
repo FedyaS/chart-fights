@@ -1,0 +1,548 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Energy into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 3,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 7,
+      "kind": "headline",
+      "title": "Profit-taking drags Energy lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 19,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.1,
+      "forecast": 2.3,
+      "prior": 2.2,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 23,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 24,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 25,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 31,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 33,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 38,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.4,
+      "forecast": 2.4,
+      "prior": 2.3,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 49,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Energy under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 54,
+      "kind": "headline",
+      "title": "Profit-taking drags Energy lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 57,
+      "kind": "headline",
+      "title": "Energy under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 59,
+      "kind": "headline",
+      "title": "Energy under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.5,
+      "forecast": 2.7,
+      "prior": 2.6,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 65,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 73,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Energy into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 3.7,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 87,
+      "kind": "headline",
+      "title": "Energy under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 88,
+      "kind": "headline",
+      "title": "Energy under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Energy into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 97,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 99,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Energy into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 100,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 103,
+      "kind": "headline",
+      "title": "Energy catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 4.3,
+      "forecast": 4.0,
+      "prior": 3.9,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 117,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 118,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 119,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 4.3,
+      "forecast": 4.0,
+      "prior": 3.9,
+      "surprise": 0.3,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 133,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 135,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 136,
+      "kind": "headline",
+      "title": "Profit-taking drags Energy lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 141,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 142,
+      "kind": "headline",
+      "title": "Profit-taking drags Energy lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 143,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.4,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.0,
+      "forecast": 2.3,
+      "prior": 2.2,
+      "surprise": -0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 175,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 180,
+      "kind": "headline",
+      "title": "Energy rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.0,
+      "forecast": 2.1,
+      "prior": 2.0,
+      "surprise": -0.1,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 191,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 192,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 201,
+      "kind": "headline",
+      "title": "Energy slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 3.5,
+      "forecast": 3.2,
+      "prior": 3.1,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 215,
+      "kind": "headline",
+      "title": "Caution weighs on Energy into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.6,
+      "forecast": 3.4,
+      "prior": 3.3,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 235,
+      "kind": "headline",
+      "title": "Profit-taking drags Energy lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 237,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Energy into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 240,
+      "kind": "headline",
+      "title": "Dip-buyers reward Energy after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 245,
+      "kind": "headline",
+      "title": "Energy catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 1.6,
+      "unemployment": 3.8,
+      "fed_funds": 5.2,
+      "ten_year": 3.1
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 3.5,
+      "unemployment": 3.4,
+      "fed_funds": 3.5,
+      "ten_year": 2.8
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 2.5,
+      "unemployment": 4.2,
+      "fed_funds": 4.9,
+      "ten_year": 3.4
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 1.5,
+      "unemployment": 4.7,
+      "fed_funds": 3.5,
+      "ten_year": 4.1
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 3.8,
+      "unemployment": 4.3,
+      "fed_funds": 3.9,
+      "ten_year": 4.4
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 3.6,
+      "unemployment": 4.2,
+      "fed_funds": 4.0,
+      "ten_year": 3.9
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 4.3,
+      "unemployment": 4.1,
+      "fed_funds": 4.0,
+      "ten_year": 3.3
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 2.1,
+      "unemployment": 4.9,
+      "fed_funds": 5.4,
+      "ten_year": 5.2
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 1.7,
+      "unemployment": 4.1,
+      "fed_funds": 4.7,
+      "ten_year": 3.8
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 2.6,
+      "unemployment": 3.9,
+      "fed_funds": 5.3,
+      "ten_year": 4.9
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 1.5,
+      "unemployment": 3.5,
+      "fed_funds": 3.9,
+      "ten_year": 4.5
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 4.4,
+      "unemployment": 3.8,
+      "fed_funds": 4.1,
+      "ten_year": 2.8
+    }
+  ],
+  "meta": {
+    "sector": "Energy",
+    "bars": 252
+  }
+}

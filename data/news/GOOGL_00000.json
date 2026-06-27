@@ -1,0 +1,1108 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 3,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 5,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 9,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 12,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 13,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 14,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 16,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 18,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 19,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 21,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.8,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 25,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 26,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 29,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 33,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 36,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 39,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 4.1,
+      "forecast": 3.8,
+      "prior": 3.7,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 46,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 49,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 50,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 53,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 54,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 58,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.5,
+      "forecast": 2.8,
+      "prior": 2.7,
+      "surprise": -0.3,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 70,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 72,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 78,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 82,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.6,
+      "forecast": 2.7,
+      "prior": 2.6,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 86,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 87,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 88,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 92,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 94,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 97,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 98,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 99,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 100,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 101,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 102,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 103,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 104,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.9,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 111,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 115,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 116,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 117,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 119,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 121,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 123,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 124,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 3.9,
+      "forecast": 3.8,
+      "prior": 3.7,
+      "surprise": 0.1,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 127,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 131,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 132,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 138,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 139,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 140,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 145,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 146,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.9,
+      "forecast": 3.2,
+      "prior": 3.1,
+      "surprise": -0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 148,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 149,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 150,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 151,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 152,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 154,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 158,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 163,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 165,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 166,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 167,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.8,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 169,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 171,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 174,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 176,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 177,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 178,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 180,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 181,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 184,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 185,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 186,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 187,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 188,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.9,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.3,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 190,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 192,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 193,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 195,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 196,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 197,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 198,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 199,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 200,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 201,
+      "kind": "headline",
+      "title": "Caution weighs on Communication & Media into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 202,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 203,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 204,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 205,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 206,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 207,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.2,
+      "forecast": 2.3,
+      "prior": 2.2,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 211,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 212,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 215,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 216,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 218,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 220,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 222,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 225,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 226,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 227,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 228,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.1,
+      "forecast": 2.3,
+      "prior": 2.2,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 232,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 233,
+      "kind": "headline",
+      "title": "Profit-taking drags Communication & Media lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 236,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Communication & Media into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 237,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 238,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 242,
+      "kind": "headline",
+      "title": "Dip-buyers reward Communication & Media after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 244,
+      "kind": "headline",
+      "title": "Communication & Media slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 245,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 248,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 249,
+      "kind": "headline",
+      "title": "Communication & Media rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 250,
+      "kind": "headline",
+      "title": "Communication & Media catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 251,
+      "kind": "headline",
+      "title": "Communication & Media under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 3.6,
+      "unemployment": 4.8,
+      "fed_funds": 5.0,
+      "ten_year": 4.4
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 1.6,
+      "unemployment": 3.2,
+      "fed_funds": 4.8,
+      "ten_year": 5.1
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 4.1,
+      "unemployment": 3.2,
+      "fed_funds": 3.7,
+      "ten_year": 4.9
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 3.8,
+      "unemployment": 4.3,
+      "fed_funds": 5.3,
+      "ten_year": 3.2
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 1.9,
+      "unemployment": 4.9,
+      "fed_funds": 5.1,
+      "ten_year": 5.0
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 3.6,
+      "unemployment": 4.4,
+      "fed_funds": 3.9,
+      "ten_year": 5.2
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 3.3,
+      "unemployment": 4.3,
+      "fed_funds": 4.2,
+      "ten_year": 3.0
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 4.2,
+      "unemployment": 4.9,
+      "fed_funds": 5.0,
+      "ten_year": 2.9
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 2.4,
+      "unemployment": 4.7,
+      "fed_funds": 3.7,
+      "ten_year": 4.6
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 2.7,
+      "unemployment": 4.6,
+      "fed_funds": 5.0,
+      "ten_year": 4.0
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 1.9,
+      "unemployment": 4.6,
+      "fed_funds": 4.1,
+      "ten_year": 4.0
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 4.2,
+      "unemployment": 4.7,
+      "fed_funds": 5.1,
+      "ten_year": 3.7
+    }
+  ],
+  "meta": {
+    "sector": "Communication & Media",
+    "bars": 252
+  }
+}

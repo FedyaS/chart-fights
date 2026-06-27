@@ -1,0 +1,394 @@
+{
+  "feed": [
+    {
+      "t": 4,
+      "kind": "headline",
+      "title": "Dip-buyers reward Long-Term Bonds after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 5,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Long-Term Bonds into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 10,
+      "kind": "headline",
+      "title": "Profit-taking drags Long-Term Bonds lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 12,
+      "kind": "headline",
+      "title": "Long-Term Bonds slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "headline",
+      "title": "Long-Term Bonds rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 3.6,
+      "forecast": 3.3,
+      "prior": 3.2,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 3.8,
+      "forecast": 3.7,
+      "prior": 3.6,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 44,
+      "kind": "headline",
+      "title": "Dip-buyers reward Long-Term Bonds after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 51,
+      "kind": "headline",
+      "title": "Long-Term Bonds slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Long-Term Bonds under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.0,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 77,
+      "kind": "headline",
+      "title": "Caution weighs on Long-Term Bonds into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.3,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 95,
+      "kind": "headline",
+      "title": "Profit-taking drags Long-Term Bonds lower.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Profit-taking drags Long-Term Bonds lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 101,
+      "kind": "headline",
+      "title": "Long-Term Bonds under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.6,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Long-Term Bonds slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 116,
+      "kind": "headline",
+      "title": "Caution weighs on Long-Term Bonds into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 3.4,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": -0.2,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 133,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Long-Term Bonds into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 141,
+      "kind": "headline",
+      "title": "Long-Term Bonds under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 146,
+      "kind": "headline",
+      "title": "Long-Term Bonds slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.6,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 156,
+      "kind": "headline",
+      "title": "Dip-buyers reward Long-Term Bonds after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 3.6,
+      "forecast": 3.7,
+      "prior": 3.6,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Long-Term Bonds slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 180,
+      "kind": "headline",
+      "title": "Dip-buyers reward Long-Term Bonds after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 1.9,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": -0.3,
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 203,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Long-Term Bonds into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 208,
+      "kind": "headline",
+      "title": "Profit-taking drags Long-Term Bonds lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.1,
+      "forecast": 2.4,
+      "prior": 2.3,
+      "surprise": -0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Long-Term Bonds rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.6,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 243,
+      "kind": "headline",
+      "title": "Dip-buyers reward Long-Term Bonds after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 2.9,
+      "unemployment": 3.8,
+      "fed_funds": 4.2,
+      "ten_year": 4.0
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 2.7,
+      "unemployment": 3.6,
+      "fed_funds": 5.4,
+      "ten_year": 3.2
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 3.8,
+      "unemployment": 4.4,
+      "fed_funds": 3.6,
+      "ten_year": 2.8
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 4.3,
+      "unemployment": 4.0,
+      "fed_funds": 5.3,
+      "ten_year": 5.2
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 3.0,
+      "unemployment": 4.9,
+      "fed_funds": 3.7,
+      "ten_year": 4.5
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 2.8,
+      "unemployment": 4.2,
+      "fed_funds": 4.3,
+      "ten_year": 4.1
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 1.8,
+      "unemployment": 3.7,
+      "fed_funds": 4.3,
+      "ten_year": 4.0
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 1.6,
+      "unemployment": 3.2,
+      "fed_funds": 4.2,
+      "ten_year": 3.7
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 1.6,
+      "unemployment": 4.4,
+      "fed_funds": 5.2,
+      "ten_year": 3.0
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 3.5,
+      "unemployment": 3.6,
+      "fed_funds": 4.0,
+      "ten_year": 4.4
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 2.7,
+      "unemployment": 3.1,
+      "fed_funds": 4.0,
+      "ten_year": 4.2
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 2.8,
+      "unemployment": 3.1,
+      "fed_funds": 3.7,
+      "ten_year": 4.2
+    }
+  ],
+  "meta": {
+    "sector": "Long-Term Bonds",
+    "bars": 252
+  }
+}

@@ -49,6 +49,16 @@ export function EndScreen({ result, onRematch, onLobby }: EndScreenProps) {
         {row('You', you, '#22c55e')}
         {row('Opponent', opp, '#f97316')}
       </div>
+      {result.reveal?.ticker && (
+        <div className="rounded border border-[#2a313a] bg-[#0b0e14] px-4 py-3 text-left text-sm">
+          <div className="text-[10px] uppercase tracking-widest text-[#6b7280] mb-1">Reveal</div>
+          <div>You were trading <span className="font-semibold text-white">{result.reveal.ticker}</span>
+            {result.reveal.sector ? <span className="text-[#9ca3af]"> ({result.reveal.sector})</span> : null}</div>
+          {result.reveal.start_date && (
+            <div className="text-xs text-[#6b7280] font-mono mt-0.5">{result.reveal.start_date} → {result.reveal.end_date}</div>
+          )}
+        </div>
+      )}
       <div className="flex gap-2">
         <button onClick={onRematch} className="flex-1 py-2 rounded bg-white text-black font-medium hover:bg-[#e5e7eb]">REMATCH</button>
         <button onClick={onLobby} className="flex-1 py-2 rounded border border-[#2a313a] hover:bg-[#1a1f26]">BACK TO LOBBY</button>

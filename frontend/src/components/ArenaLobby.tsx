@@ -28,7 +28,7 @@ export function ArenaLobby({ arenas, onSelect, selectedId, connecting }: ArenaLo
               className={`lobby-card text-left p-4 rounded-lg border ${active ? 'border-[#ef4444] bg-[#1a1f26]' : 'border-[#2a313a] bg-[#111418] hover:border-[#ef4444]/60'} ${connecting ? 'opacity-60 cursor-wait' : ''}`}
             >
               <div className="font-semibold">{a.name}</div>
-              <div className="text-xs text-[#f97316] mt-0.5">{a.ticker} • {barCount} bars</div>
+              <div className="text-xs text-[#f97316] mt-0.5">{barCount} bars</div>
               <div className="text-xs text-[#9ca3af] mt-2 leading-snug">{a.description}</div>
               <div className="mt-3 text-[10px] uppercase tracking-widest text-[#9ca3af]">
                 {active && connecting ? 'Connecting…' : 'Enter Duel →'}

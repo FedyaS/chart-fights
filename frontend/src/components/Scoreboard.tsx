@@ -5,6 +5,7 @@ import type { PlayerState } from '../types';
 interface ScoreboardProps {
   you: PlayerState | null;
   opp: PlayerState | null;
+  curve?: number[]; // your equity samples over the match
 }
 
 function pnlColor(v: number) {
@@ -16,6 +17,24 @@ function pnlColor(v: number) {
 function fmt(v: number, sign = false) {
   const s = sign && v > 0 ? '+' : '';
   return `${s}${v.toFixed(2)}`;
+}
+
+function Sparkline({ data }: { data: number[] }) {
+  if (data.length < 2) return null;
+  const w = 100, h = 24;
+  const min = Math.min(...data), max = Math.max(...data);
+  const span = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / span) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const up = data[data.length - 1] >= data[0];
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full" style={{ height: 24 }}>
+      <polyline points={pts} fill="none" stroke={up ? '#22c55e' : '#ef4444'} strokeWidth={1.5} />
+    </svg>
+  );
 }
 
 function PlayerCard({ p, label, accent }: { p: PlayerState | null; label: string; accent: string }) {
@@ -40,8 +59,7 @@ function PlayerCard({ p, label, accent }: { p: PlayerState | null; label: string
   );
 }
 
-export function Scoreboard({ you, opp }: ScoreboardProps) {
-  const positions = you?.positions ?? [];
+export function Scoreboard({ you, opp, curve = [] }: ScoreboardProps) {
   return (
     <div className="panel p-3 flex flex-col gap-2.5">
       <div className="text-xs font-medium">SCOREBOARD</div>
@@ -49,23 +67,12 @@ export function Scoreboard({ you, opp }: ScoreboardProps) {
         <PlayerCard p={you} label="You" accent="#22c55e" />
         <PlayerCard p={opp} label="Opponent" accent="#f97316" />
       </div>
-      <div>
-        <div className="text-[10px] uppercase tracking-widest text-[#6b7280] mb-1">Your Positions</div>
-        {positions.length === 0 ? (
-          <div className="text-[11px] text-[#6b7280]">Flat — no open positions.</div>
-        ) : (
-          <div className="space-y-0.5">
-            {positions.map((pos, i) => (
-              <div key={i} className="flex items-center justify-between text-[11px] font-mono">
-                <span className={pos.side === 'long' ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
-                  {pos.side.toUpperCase()} {pos.instr} ×{pos.size}
-                </span>
-                <span className="text-[#9ca3af]">@ {pos.entry.toFixed(2)}{pos.unrealized != null ? ` · ${fmt(pos.unrealized, true)}` : ''}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {curve.length >= 2 && (
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-[#6b7280] mb-0.5">Your Equity</div>
+          <Sparkline data={curve} />
+        </div>
+      )}
     </div>
   );
 }

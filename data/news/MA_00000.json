@@ -1,0 +1,534 @@
+{
+  "feed": [
+    {
+      "t": 1,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 2,
+      "kind": "headline",
+      "title": "Financials catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 3,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 6,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 10,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 12,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 18,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 21,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.4,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": -0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 22,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 42,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 2.5,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": -0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 52,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 53,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 63,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 2.5,
+      "forecast": 2.2,
+      "prior": 2.1,
+      "surprise": 0.3,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 70,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 74,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 84,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 3.7,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 87,
+      "kind": "headline",
+      "title": "Financials catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 89,
+      "kind": "headline",
+      "title": "Financials under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 93,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 96,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 98,
+      "kind": "headline",
+      "title": "Caution weighs on Financials into the session.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 99,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 100,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 105,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 2.5,
+      "forecast": 2.8,
+      "prior": 2.7,
+      "surprise": -0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 107,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 109,
+      "kind": "headline",
+      "title": "Caution weighs on Financials into the session.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 110,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 112,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 113,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 114,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Financials into the close.",
+      "sentiment": "bullish",
+      "importance": "high"
+    },
+    {
+      "t": 126,
+      "kind": "calendar",
+      "title": "CPI released",
+      "name": "CPI",
+      "actual": 2.8,
+      "forecast": 2.7,
+      "prior": 2.6,
+      "surprise": 0.1,
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 131,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 143,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 147,
+      "kind": "calendar",
+      "title": "Nonfarm Payrolls released",
+      "name": "Nonfarm Payrolls",
+      "actual": 2.5,
+      "forecast": 2.4,
+      "prior": 2.3,
+      "surprise": 0.1,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 150,
+      "kind": "headline",
+      "title": "Financials slips as sellers take control.",
+      "sentiment": "bearish",
+      "importance": "high"
+    },
+    {
+      "t": 151,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 153,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 168,
+      "kind": "calendar",
+      "title": "FOMC Rate Decision released",
+      "name": "FOMC Rate Decision",
+      "actual": 3.8,
+      "forecast": 3.6,
+      "prior": 3.5,
+      "surprise": 0.2,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 170,
+      "kind": "headline",
+      "title": "Financials catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 180,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Financials into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 184,
+      "kind": "headline",
+      "title": "Financials under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 189,
+      "kind": "calendar",
+      "title": "PPI released",
+      "name": "PPI",
+      "actual": 3.1,
+      "forecast": 3.1,
+      "prior": 3.0,
+      "surprise": 0.0,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 202,
+      "kind": "headline",
+      "title": "Financials catches a bid as buyers step in.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 205,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 207,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 210,
+      "kind": "calendar",
+      "title": "Retail Sales released",
+      "name": "Retail Sales",
+      "actual": 2.9,
+      "forecast": 2.6,
+      "prior": 2.5,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 213,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Financials into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 224,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 227,
+      "kind": "headline",
+      "title": "Dip-buyers reward Financials after recent weakness.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 231,
+      "kind": "calendar",
+      "title": "GDP released",
+      "name": "GDP",
+      "actual": 3.3,
+      "forecast": 3.0,
+      "prior": 2.9,
+      "surprise": 0.3,
+      "sentiment": "neutral",
+      "importance": "high"
+    },
+    {
+      "t": 235,
+      "kind": "headline",
+      "title": "Risk-on tone lifts Financials into the close.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    },
+    {
+      "t": 240,
+      "kind": "headline",
+      "title": "Profit-taking drags Financials lower.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 241,
+      "kind": "headline",
+      "title": "Financials under pressure amid risk-off rotation.",
+      "sentiment": "bearish",
+      "importance": "medium"
+    },
+    {
+      "t": 242,
+      "kind": "headline",
+      "title": "Financials rallies on upbeat positioning.",
+      "sentiment": "bullish",
+      "importance": "medium"
+    }
+  ],
+  "indicators": [
+    {
+      "t": 0,
+      "cpi_yoy": 1.8,
+      "unemployment": 3.9,
+      "fed_funds": 5.3,
+      "ten_year": 4.5
+    },
+    {
+      "t": 21,
+      "cpi_yoy": 2.2,
+      "unemployment": 4.5,
+      "fed_funds": 4.8,
+      "ten_year": 4.2
+    },
+    {
+      "t": 42,
+      "cpi_yoy": 4.4,
+      "unemployment": 4.5,
+      "fed_funds": 4.2,
+      "ten_year": 3.9
+    },
+    {
+      "t": 63,
+      "cpi_yoy": 3.6,
+      "unemployment": 3.1,
+      "fed_funds": 4.6,
+      "ten_year": 5.1
+    },
+    {
+      "t": 84,
+      "cpi_yoy": 1.7,
+      "unemployment": 4.6,
+      "fed_funds": 5.1,
+      "ten_year": 4.3
+    },
+    {
+      "t": 105,
+      "cpi_yoy": 3.0,
+      "unemployment": 4.5,
+      "fed_funds": 4.1,
+      "ten_year": 4.1
+    },
+    {
+      "t": 126,
+      "cpi_yoy": 2.1,
+      "unemployment": 3.0,
+      "fed_funds": 3.9,
+      "ten_year": 5.2
+    },
+    {
+      "t": 147,
+      "cpi_yoy": 1.6,
+      "unemployment": 3.6,
+      "fed_funds": 4.3,
+      "ten_year": 4.9
+    },
+    {
+      "t": 168,
+      "cpi_yoy": 2.5,
+      "unemployment": 3.5,
+      "fed_funds": 4.5,
+      "ten_year": 3.2
+    },
+    {
+      "t": 189,
+      "cpi_yoy": 1.9,
+      "unemployment": 4.0,
+      "fed_funds": 5.3,
+      "ten_year": 5.2
+    },
+    {
+      "t": 210,
+      "cpi_yoy": 2.3,
+      "unemployment": 3.5,
+      "fed_funds": 4.0,
+      "ten_year": 3.2
+    },
+    {
+      "t": 231,
+      "cpi_yoy": 2.9,
+      "unemployment": 4.6,
+      "fed_funds": 5.3,
+      "ten_year": 3.3
+    }
+  ],
+  "meta": {
+    "sector": "Financials",
+    "bars": 252
+  }
+}

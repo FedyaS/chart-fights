@@ -12,6 +12,8 @@ import type {
   GameEvent,
   Fill,
   Side,
+  NewsItem,
+  Indicators,
 } from '../types';
 
 const STARTING_CAPITAL = 100;
@@ -53,6 +55,11 @@ function parseOrder(raw: any): OpenOrder {
     size: num(raw?.size),
     type: String(raw?.type ?? 'limit'),
     price: raw?.price != null ? num(raw.price) : undefined,
+    tp: raw?.tp != null ? num(raw.tp) : undefined,
+    sl: raw?.sl != null ? num(raw.sl) : undefined,
+    group: raw?.group ?? undefined,
+    reduceOnly: raw?.reduce_only ?? raw?.reduceOnly ?? undefined,
+    kind: raw?.kind ?? undefined,
   };
 }
 
@@ -86,8 +93,11 @@ export function parsePlayer(
     0,
   );
   const pnl = raw?.pnl != null ? num(raw.pnl) : equity - STARTING_CAPITAL;
+  const buyingPower = raw?.buying_power != null ? num(raw.buying_power)
+    : raw?.buyingPower != null ? num(raw.buyingPower) : prev?.buyingPower;
+  const exposure = raw?.exposure != null ? num(raw.exposure) : prev?.exposure;
 
-  return { id, ip, equity, pnl, unrealized, tb, positions, orders };
+  return { id, ip, equity, pnl, unrealized, tb, positions, orders, buyingPower, exposure };
 }
 
 export function parsePlayersMap(
@@ -177,6 +187,36 @@ export function parseFills(raw: any): Fill[] {
     type: String(f?.type ?? 'market'),
     t: num(f?.t),
   }));
+}
+
+export function parseNews(raw: any): NewsItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((e: any) => e && (e.title || e.headline))
+    .map((e: any): NewsItem => ({
+      t: num(e?.t),
+      kind: String(e?.kind ?? (e?.name ? 'calendar' : 'headline')),
+      title: String(e?.title ?? e?.headline ?? ''),
+      sentiment: e?.sentiment,
+      importance: e?.importance,
+      name: e?.name,
+      actual: e?.actual != null ? num(e.actual) : undefined,
+      forecast: e?.forecast != null ? num(e.forecast) : undefined,
+      prior: e?.prior != null ? num(e.prior) : undefined,
+      surprise: e?.surprise != null ? num(e.surprise) : undefined,
+    }));
+}
+
+export function parseIndicators(raw: any): Indicators | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const pick = (k: string) => (raw[k] != null ? num(raw[k]) : undefined);
+  return {
+    t: raw.t != null ? num(raw.t) : undefined,
+    cpi_yoy: pick('cpi_yoy'),
+    unemployment: pick('unemployment'),
+    fed_funds: pick('fed_funds'),
+    ten_year: pick('ten_year'),
+  };
 }
 
 export function otherPlayer(players: Record<string, PlayerState>, you: string): PlayerState | null {
