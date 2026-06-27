@@ -1,0 +1,37 @@
+# Build context is the repo ROOT (see fly.toml / backend/Dockerfile).
+# Keep ONLY what the image needs: backend/ and data/. Everything else is
+# excluded so the context stays small and builds stay fast.
+
+# Frontend (deployed separately to Vercel — not needed in the backend image)
+frontend/
+
+# Docs, research, scratch, helper scripts
+docs/
+scratch/
+terminals/
+scripts/
+*.md
+
+# Git / editor / CI metadata
+.git/
+.gitignore
+.cursor/
+.vscode/
+.idea/
+
+# Python caches / virtualenvs (also re-created fresh inside the image)
+**/__pycache__/
+**/*.pyc
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Don't ship the backend's own tests
+backend/tests/

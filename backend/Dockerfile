@@ -1,11 +1,15 @@
-# Chart-Fights backend Dockerfile (FastAPI/Starlette skeleton)
+# Chart-Fights backend Dockerfile (FastAPI/Starlette)
 # For Fly.io (or similar) deploy per architecture notes.
-# Build context: project root (so data/ and backend/ visible)
 #
-# Usage:
-#   cd backend
-#   docker build -t chart-fights-backend -f Dockerfile ..
-#   docker run -p 8000:8000 chart-fights-backend
+# IMPORTANT: the build context MUST be the repo root (NOT backend/) so that
+# both `backend/` and `data/` are visible to the COPY steps below. fly.toml at
+# the repo root references this file via `dockerfile = "backend/Dockerfile"`
+# and uses the repo root as the context automatically.
+#
+# Manual local build/run (from repo root):
+#   docker build -t chart-fights-backend -f backend/Dockerfile .
+#   docker run -p 8080:8080 chart-fights-backend
+#   # then: curl http://localhost:8080/health
 
 FROM python:3.11-slim
 
@@ -27,9 +31,10 @@ COPY data/ /app/data/
 # Python path so `from app...` works
 ENV PYTHONPATH=/app/backend
 
-# Fly.io / prod: use PORT
-ENV PORT=8000
-EXPOSE 8000
+# Bind a fixed internal port (8080) that matches fly.toml's `internal_port`.
+# We still honor $PORT if the platform injects one, defaulting to 8080.
+ENV PORT=8080
+EXPOSE 8080
 
-# Run with uvicorn (production: no --reload)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Shell form so ${PORT} is expanded at runtime. Production: no --reload.
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}
