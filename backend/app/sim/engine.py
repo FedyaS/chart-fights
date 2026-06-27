@@ -70,6 +70,12 @@ TB_MAX = Decimal("100")
 BASE_SPREAD_PCT = Decimal("0.0007")   # 7 bps adverse on market/stop fills
 WIDEN_PCT = Decimal("0.006")          # 0.6% adverse, mid of spec's 0.4-0.8% band
 
+# ----- Risk / buying power -----
+# Position size is denominated in equity points (P&L = size * return), so gross
+# notional == sum of |position sizes|. Cap it at equity * MAX_LEVERAGE so sizing is
+# a real decision rather than unbounded. Starting equity is 100 -> 300 units of room.
+MAX_LEVERAGE = Decimal("3")
+
 # ----- Sabotage table (spec §7 / task-003): cost (IP), cooldown (real s), duration -----
 ABILITIES: Dict[str, Dict[str, Any]] = {
     "delete_sl":    {"cost": Decimal("30"), "cd": Decimal("60")},
@@ -252,8 +258,25 @@ class MatchState:
         self.arena_hash = arena_data["hash"]
         self.content_hash = arena_data.get("content_hash", arena_data["hash"])
         self.label = arena_data["label"]
+        self.sector = arena_data.get("sector", arena_data["label"])
+        self.asset_class = arena_data.get("asset_class", "Equity")
         self.bars: List[Dict[str, Any]] = arena_data["bars"]
         self.clock = SharedClock(self.bars)
+        # News/econ feed (anonymized, Sim-Day indexed). Emitted as bars are crossed.
+        self._feed_by_t: Dict[int, List[Dict[str, Any]]] = {}
+        for ev in arena_data.get("feed", []):
+            self._feed_by_t.setdefault(int(ev.get("t", 0)), []).append(ev)
+        self._indicators: List[Dict[str, Any]] = sorted(
+            arena_data.get("indicators", []), key=lambda x: int(x.get("t", 0))
+        )
+        # Real symbol / dates — revealed only at match end (post-match learning).
+        _meta = arena_data.get("meta", {}) or {}
+        self.reveal = {
+            "ticker": _meta.get("ticker", arena_data.get("ticker")),
+            "start_date": _meta.get("start_date"),
+            "end_date": _meta.get("end_date"),
+            "sector": self.sector,
+        }
         self.start_real: float = time.perf_counter()
         self.end_real: Optional[float] = None
         self.players: Dict[str, PlayerState] = {}
@@ -262,6 +285,7 @@ class MatchState:
         self.voice_signaling: Dict[str, Any] = {}
         self._last_advance: float = self.start_real
         self.match_time: Decimal = Decimal("0")  # deterministic real-seconds accumulator
+        self._event_cursor: int = 0  # events drained into deltas so far (dedup)
         self._active = True
 
     # ---- player / accessors -------------------------------------------------
@@ -403,8 +427,20 @@ class MatchState:
     def _process_resting_orders(self, pid: str, ps: PlayerState, bar: Dict[str, Any], day: int) -> List[Dict[str, Any]]:
         fills: List[Dict[str, Any]] = []
         remaining: List[Dict[str, Any]] = []
+        new_children: List[Dict[str, Any]] = []
+        filled_groups: set = set()
         # deterministic order: by order id
         for o in sorted(ps.orders, key=lambda x: x.get("id", 0)):
+            grp = o.get("group")
+            if grp is not None and grp in filled_groups:
+                continue  # OCO: sibling already filled this bar -> cancel
+            instr = o.get("instr", "X")
+            # reduce-only stale cleanup: drop brackets once the position is flat
+            if o.get("reduce_only"):
+                pos = ps.positions.get(instr)
+                cur = pos.get("size", Decimal("0")) if pos else Decimal("0")
+                if cur == 0:
+                    continue  # cancel orphaned bracket
             triggered, base_price = self._trigger_and_base_price(o, bar)
             if not triggered:
                 remaining.append(o)
@@ -412,18 +448,31 @@ class MatchState:
             side = o.get("side", "long")
             size = Decimal(str(o.get("size", 1)))
             otype = o.get("type", "market")
+            if o.get("reduce_only"):
+                # never flip the position: clamp to the live size
+                pos = ps.positions.get(instr)
+                cur = abs(pos.get("size", Decimal("0"))) if pos else Decimal("0")
+                size = min(size, cur)
+                if size <= 0:
+                    continue
             eff_size = size if side == "long" else -size
             fill_price = self._fill_with_slippage(ps, base_price, eff_size, otype)
-            realized = self._apply_fill(ps, o.get("instr", "X"), eff_size, fill_price)
+            realized = self._apply_fill(ps, instr, eff_size, fill_price)
             rec = {
-                "player": pid, "instr": o.get("instr", "X"), "price": float(fill_price),
+                "player": pid, "instr": instr, "price": float(fill_price),
                 "size": float(eff_size), "side": side, "type": otype,
                 "t": float(self.clock.T), "realized": float(realized.quantize(EQ_Q)),
                 "order_id": o.get("id"),
             }
             fills.append(rec)
             self.events.append({"type": "fill", **rec})
-        ps.orders = remaining
+            # entry order carrying TP/SL -> attach reduce-only OCO brackets now
+            if o.get("tp") is not None or o.get("sl") is not None:
+                new_children.extend(self._make_bracket_orders(ps, instr, side, size, o.get("id"), o.get("tp"), o.get("sl")))
+            if grp is not None:
+                filled_groups.add(grp)
+        # drop OCO siblings whose partner filled, then add any freshly attached brackets
+        ps.orders = [o for o in remaining if o.get("group") not in filled_groups] + new_children
         return fills
 
     # ---- advance ------------------------------------------------------------
@@ -440,6 +489,7 @@ class MatchState:
             bar = self.clock.get_bar(day)
             for pid in sorted(players):
                 fills.extend(self._process_resting_orders(pid, self.players[pid], bar, day))
+            self._emit_news(day)
 
         current_price = self.clock.get_current_price()
         for pid in players:
@@ -447,6 +497,24 @@ class MatchState:
 
         deltas["fills"] = fills
         return deltas
+
+    # ---- news / econ feed ---------------------------------------------------
+    def _emit_news(self, day: int) -> None:
+        """Emit any headlines / calendar prints scheduled for this crossed bar.
+        Public (both players see the same chart), tagged with the Sim Day."""
+        for ev in self._feed_by_t.get(int(day), []):
+            self.events.append({"type": "news", "t": float(day), **ev})
+
+    def current_indicators(self) -> Optional[Dict[str, Any]]:
+        """Latest macro indicator snapshot with t <= current Sim Day."""
+        day = int(self.clock.T)
+        latest = None
+        for snap in self._indicators:
+            if int(snap.get("t", 0)) <= day:
+                latest = snap
+            else:
+                break
+        return latest
 
     # ---- action ingestion ---------------------------------------------------
     def queue_action(self, player_id: str, action_type: str, payload: Dict[str, Any], *, record: bool = True) -> bool:
@@ -508,17 +576,76 @@ class MatchState:
 
         return False
 
+    # ---- buying power / risk ------------------------------------------------
+    def _gross_exposure(self, ps: PlayerState, *, exclude: Optional[str] = None) -> Decimal:
+        return sum((abs(p.get("size", Decimal("0"))) for k, p in ps.positions.items() if k != exclude), Decimal("0"))
+
+    def _buying_power(self, ps: PlayerState) -> Decimal:
+        # Room is relative to current equity; reuse the live mark.
+        unrealized = self.player_unrealized(ps, self.get_price())
+        equity = Decimal("100") + ps.realized_pnl + unrealized
+        return (equity * MAX_LEVERAGE)
+
+    def _exceeds_buying_power(self, ps: PlayerState, instr: str, eff_size: Decimal) -> bool:
+        """True if adding eff_size to the instr position would push gross exposure
+        past the cap. Reductions / flips that lower exposure are always allowed."""
+        pos = ps.positions.get(instr)
+        cur = pos.get("size", Decimal("0")) if pos else Decimal("0")
+        projected_instr = abs(cur + eff_size)
+        if projected_instr <= abs(cur):
+            return False  # not increasing this instrument's exposure
+        projected_gross = projected_instr + self._gross_exposure(ps, exclude=instr)
+        return projected_gross > self._buying_power(ps)
+
+    def _reject_order(self, player_id: str, reason: str, sim_t: Decimal) -> bool:
+        self.events.append({"type": "order_rejected", "player": player_id, "reason": reason, "t": float(sim_t)})
+        return False
+
+    # ---- bracket (TP/SL) construction ---------------------------------------
+    def _make_bracket_orders(self, ps: PlayerState, instr: str, entry_side: str, size: Decimal,
+                             group_id: Any, tp: Optional[Any], sl: Optional[Any]) -> List[Dict[str, Any]]:
+        """Build reduce-only OCO exit legs for a freshly opened position.
+
+        Long  -> TP = sell limit (above), SL = sell stop (below).
+        Short -> TP = buy  limit (below), SL = buy  stop (above).
+        The side-correct trigger semantics live in _trigger_and_base_price; here we
+        only pick the right (type, side) per leg so short TPs sit below and short SLs above.
+        """
+        exit_side = "short" if entry_side == "long" else "long"
+        out: List[Dict[str, Any]] = []
+        if tp is not None:
+            oid = ps.next_order_id; ps.next_order_id += 1
+            out.append({"id": oid, "type": "limit", "instr": instr, "side": exit_side,
+                        "size": float(size), "price": float(tp), "reduce_only": True,
+                        "group": group_id, "kind": "tp"})
+        if sl is not None:
+            oid = ps.next_order_id; ps.next_order_id += 1
+            out.append({"id": oid, "type": "stop", "instr": instr, "side": exit_side,
+                        "size": float(size), "price": float(sl), "reduce_only": True,
+                        "group": group_id, "kind": "sl"})
+        return out
+
+    def _drop_brackets_for(self, ps: PlayerState, instr: str) -> None:
+        """Remove stale reduce-only legs once a position is flat (manual close)."""
+        ps.orders = [o for o in ps.orders if not (o.get("reduce_only") and o.get("instr", "X") == instr)]
+
     def _handle_submit_order(self, player_id: str, ps: PlayerState, payload: Dict[str, Any], sim_t: Decimal) -> bool:
         otype = payload.get("type", "market")
         instr = payload.get("instr", "X")
         side = payload.get("side", "long")
         size = Decimal(str(payload.get("size", 1)))
+        if size <= 0:
+            return self._reject_order(player_id, "invalid_size", sim_t)
         price = payload.get("price")
+        tp = payload.get("tp")
+        sl = payload.get("sl")
+        eff_size = size if side == "long" else -size
+        if self._exceeds_buying_power(ps, instr, eff_size):
+            return self._reject_order(player_id, "insufficient_buying_power", sim_t)
         oid = ps.next_order_id
         ps.next_order_id += 1
 
         if otype == "market":
-            eff_size = size if side == "long" else -size
             base_price = self.get_price()
             fill_price = self._fill_with_slippage(ps, base_price, eff_size, "market")
             realized = self._apply_fill(ps, instr, eff_size, fill_price)
@@ -528,18 +655,25 @@ class MatchState:
                 "t": float(sim_t), "realized": float(realized.quantize(EQ_Q)), "order_id": oid,
             }
             self.events.append({"type": "fill", **rec})
+            if tp is not None or sl is not None:
+                ps.orders.extend(self._make_bracket_orders(ps, instr, side, size, oid, tp, sl))
             self._update_equity(ps, base_price)
             return True
 
-        # resting limit/stop order
-        ps.orders.append({
+        # resting limit/stop order (brackets attach when it fills)
+        order: Dict[str, Any] = {
             "id": oid,
             "type": otype,
             "instr": instr,
             "side": side,
             "size": float(size),
             "price": price,
-        })
+        }
+        if tp is not None:
+            order["tp"] = tp
+        if sl is not None:
+            order["sl"] = sl
+        ps.orders.append(order)
         return True
 
     def _handle_close(self, player_id: str, ps: PlayerState, payload: Dict[str, Any], sim_t: Decimal) -> bool:
@@ -560,6 +694,9 @@ class MatchState:
             "size": float(eff_size), "side": "short" if eff_size < 0 else "long", "type_": "close",
             "t": float(sim_t), "realized": float(realized.quantize(EQ_Q)),
         })
+        # if the position is now flat, retire any orphaned reduce-only brackets
+        if instr not in ps.positions or ps.positions[instr].get("size", Decimal("0")) == 0:
+            self._drop_brackets_for(ps, instr)
         self._update_equity(ps, base_price)
         return True
 
@@ -691,6 +828,8 @@ class MatchState:
                 "realized_pnl": float(ps.realized_pnl.quantize(EQ_Q)),
                 "unrealized_pnl": float(unrealized.quantize(EQ_Q)),
                 "return_pct": float((equity - Decimal("100")).quantize(EQ_Q)),
+                "buying_power": float(self._buying_power(ps).quantize(EQ_Q)),
+                "exposure": float(self._gross_exposure(ps).quantize(EQ_Q)),
                 "positions": {k: {"size": float(v.get("size", 0)), "entry": float(v.get("entry", 100))}
                               for k, v in ps.positions.items()},
                 "orders": ps.orders,
@@ -710,6 +849,7 @@ class MatchState:
             "time_left": max(0.0, MATCH_DURATION_REAL - float(self.match_time)),
             "tb": self.clock.tb_resolver.snapshot(),
             "current_bar": cur_bar,  # full OHLC for LW
+            "indicators": self.current_indicators(),
             "players": players_out,
             "is_over": self.is_over(),
             "winner": result["winner"],
@@ -771,6 +911,8 @@ class SimulationEngine:
 
     async def run_clock(self):
         self.state._last_advance = time.perf_counter()
+        # Don't replay pre-match events (already in the connect snapshot) as deltas.
+        self.state._event_cursor = len(self.state.events)
         tick = 1.0 / 15  # ~15Hz internal, broadcast on change or rate
         while self.state._active and not self.state.is_over():
             now = time.perf_counter()
@@ -794,6 +936,7 @@ class SimulationEngine:
                     "winner": result["winner"],
                     "is_draw": result["is_draw"],
                     "result": result,
+                    "reveal": self.state.reveal,  # real ticker/dates revealed post-match
                     "content_hash": self.state.content_hash,
                 })
             except Exception:

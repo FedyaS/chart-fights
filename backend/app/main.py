@@ -4,6 +4,7 @@ Per GDD, game-mech-spec, arch, task-005 etc.
 """
 import uuid
 import asyncio
+import random
 from typing import Dict
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,10 +12,13 @@ from pydantic import BaseModel
 import json
 from .arena import load_arena, get_available_arenas, load_arena_index
 from .sim.engine import SimulationEngine, Action  # enhanced engine in sim/ per task focus; supports real arenas, submit_order, full deltas + content_hash
+from .bot import BotTrader
 
 MATCHES: Dict[str, SimulationEngine] = {}
 CONNECTIONS: Dict[str, Dict[str, WebSocket]] = {}
 ACTION_LOGS: Dict[str, list] = {}
+MATCH_BOTS: Dict[str, str] = {}      # match_id -> bot player_id (for quick-match fallback)
+BOT_DRIVERS: Dict[str, BotTrader] = {}  # match_id -> running BotTrader
 
 app = FastAPI(title="chart-fights-backend", version="0.1-mvp")
 
@@ -40,6 +44,11 @@ class CreateMatchResp(BaseModel):
     content_hash: str
     num_bars: int
     ws_url: str
+    bot: bool = False           # quick-match vs-bot fallback flag
+
+
+class QuickMatchReq(BaseModel):
+    vs_bot: bool = True         # quick-match defaults to a bot opponent if no human joins
 
 
 class ActionReq(BaseModel):
@@ -58,23 +67,43 @@ async def list_arenas():
     return {"arenas": get_available_arenas(12), "total": len(load_arena_index())}
 
 
-@app.post("/matches", response_model=CreateMatchResp)
-async def create_match(req: CreateMatchReq):
-    try:
-        arena = load_arena(req.arena_id)
-    except Exception as e:
-        raise HTTPException(400, f"Invalid arena: {e}")
+def _new_match(arena_id: str, player_ids: list[str] | None, *, bot: bool = False) -> tuple[str, dict]:
+    arena = load_arena(arena_id)
     match_id = str(uuid.uuid4())[:8]
-    engine = SimulationEngine(match_id, req.arena_id)
+    engine = SimulationEngine(match_id, arena_id)
     MATCHES[match_id] = engine
     CONNECTIONS[match_id] = {}
     ACTION_LOGS[match_id] = []
-    for pid in (req.player_ids or ["p1", "p2"]):
+    for pid in (player_ids or ["p1", "p2"]):
         engine.state.add_player(pid)
+    if bot:
+        MATCH_BOTS[match_id] = "p2"  # p2 is a bot unless a real human takes the slot
     # Clock starts on first WS connect so HTTP/harness actions stay replayable from actions_log.
     async def bc(payload): await broadcast_to_room(match_id, payload)
     engine.set_broadcast(bc)
+    return match_id, arena
+
+
+@app.post("/matches", response_model=CreateMatchResp)
+async def create_match(req: CreateMatchReq):
+    try:
+        match_id, arena = _new_match(req.arena_id, req.player_ids)
+    except Exception as e:
+        raise HTTPException(400, f"Invalid arena: {e}")
     return CreateMatchResp(match_id=match_id, arena_id=req.arena_id, arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}")
+
+
+@app.post("/matches/quick", response_model=CreateMatchResp)
+async def quick_match(req: QuickMatchReq | None = None):
+    """Front-page Quick Match (#6): pick a random arena (varied regimes) and create
+    a match. p2 is a bot unless a real second player joins before/while it plays."""
+    req = req or QuickMatchReq()
+    idx = load_arena_index()
+    if not idx:
+        raise HTTPException(500, "no arenas available")
+    arena_id = random.choice(idx)["id"]
+    match_id, arena = _new_match(arena_id, ["p1", "p2"], bot=req.vs_bot)
+    return CreateMatchResp(match_id=match_id, arena_id=arena_id, arena_label=arena["label"], arena_hash=arena["hash"], content_hash=arena.get("content_hash", arena["hash"]), num_bars=arena["num_bars"], ws_url=f"/ws/{match_id}", bot=req.vs_bot)
 
 
 @app.get("/matches/{match_id}")
@@ -91,12 +120,23 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
     eng = MATCHES[match_id]
     room = CONNECTIONS.setdefault(match_id, {})
     if player_id == "anon": player_id = f"p{len(room)+1}"
+    # A real human taking the bot's slot cancels the bot fallback.
+    if MATCH_BOTS.get(match_id) == player_id:
+        MATCH_BOTS.pop(match_id, None)
+        if match_id in BOT_DRIVERS:
+            BOT_DRIVERS.pop(match_id).stop()
     eng.state.add_player(player_id)
     # Snapshot before room registration so bg-clock deltas cannot race ahead of it.
     await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
     room[player_id] = websocket
     if eng._task is None:
         eng.start()
+    # Spawn the bot opponent once the clock is live (quick-match fallback).
+    bot_pid = MATCH_BOTS.get(match_id)
+    if bot_pid and bot_pid != player_id and match_id not in BOT_DRIVERS:
+        driver = BotTrader(eng, bot_pid)
+        BOT_DRIVERS[match_id] = driver
+        driver.start()
     try:
         while True:
             raw = await websocket.receive_text()

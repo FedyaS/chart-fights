@@ -3,8 +3,8 @@
 # CHANGE ME: pick your own unique app name and preferred region before deploying.
 #   - `app`             must be globally unique on Fly.io
 #   - `primary_region`  pick the region closest to your players (see `fly platform regions`)
-app = "chart-fights-backend"
-primary_region = "iad"
+app = "chart-fights-v1"
+primary_region = "sjc"
 
 # Build from the existing backend Dockerfile. The build context is this file's
 # directory (the repo ROOT), so the Dockerfile's `COPY backend/ ...` and
