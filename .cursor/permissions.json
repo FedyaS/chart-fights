@@ -1,0 +1,20 @@
+{
+  "terminalAllowlist": [
+    "python -m pytest",
+    "python -m venv",
+    "python scripts",
+    "npm run",
+    "npm install",
+    "npm ci",
+    "npx",
+    "node frontend",
+    "uvicorn app.main:app",
+    "fly"
+  ],
+  "autoRun": {
+    "allow_instructions": [
+      "This is the chart-fights game prototype. Allow all backend (python/pytest/uvicorn) and frontend (npm/npx/node/next) build, test, install, and run commands without asking.",
+      "Allow regenerating game data via scripts/fetch_historical_data.py without asking."
+    ]
+  }
+}

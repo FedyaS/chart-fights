@@ -27,9 +27,9 @@ npm run dev
 
 # Backend (new terminal)
 cd backend
-python -m venv venv && source venv/bin/activate  # or .venv
+python -m venv venv && source venv/bin/activate  # or .venv ; on Windows: venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --reload --port 8000  # run from backend/ ; single process (--workers 1)
 ```
 
 Open http://localhost:3000 , connect WS to ws://localhost:8000/ws/<match>

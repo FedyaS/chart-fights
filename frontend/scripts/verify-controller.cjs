@@ -54,6 +54,13 @@ if (!pageSrc.includes("sendWSAction('submit_order'")) {
   throw new Error('page.tsx must send submit_order via WS');
 }
 log('OK page.tsx wires submit_order to sendWSAction');
+if (!pageSrc.includes("sendWSAction('tb_influence'")) {
+  throw new Error('page.tsx must send tb_influence via WS');
+}
+if (!pageSrc.includes("sendWSAction('ip_spend'")) {
+  throw new Error('page.tsx must send ip_spend via WS');
+}
+log('OK page.tsx wires tb_influence + ip_spend to sendWSAction');
 
 const React = require('react');
 const { renderHook, act } = require('@testing-library/react');
@@ -64,21 +71,27 @@ const container = document.getElementById('chart');
 const containerRef = { current: container };
 const bars = SAMPLE_ARENAS[0].bars;
 
-const { result } = renderHook(() => useReplayController({ containerRef, initialBars: bars }), {
+const { result } = renderHook(() => useReplayController({ containerRef }), {
   wrapper: ({ children }) => React.createElement(React.Fragment, null, children),
 });
 
-log(`initial index=${result.current.currentIndex}`);
-act(() => result.current.seekTo(4));
-log(`seekTo(4) index=${result.current.currentIndex}`);
-act(() => result.current.addPlayerMarker(4, true, 'p1'));
-act(() => result.current.updateFromServer(6, bars[6]));
-log(`updateFromServer(6) index=${result.current.currentIndex}`);
-act(() => result.current.play());
-log(`play isPlaying=${result.current.isPlaying}`);
+log(`initial revealedCount=${result.current.revealedCount}`);
+// Streaming: bars are revealed one at a time (anti-cheat: no future preload).
+act(() => result.current.pushBar(bars[0]));
+act(() => result.current.pushBar(bars[1]));
+act(() => result.current.pushBar(bars[2]));
+log(`after 3 pushBar revealedCount=${result.current.revealedCount}`);
+// Re-pushing the latest in-progress bar must not grow the revealed count.
+act(() => result.current.pushBar(bars[2]));
+log(`after re-push latest revealedCount=${result.current.revealedCount}`);
+act(() => result.current.addFillMarker(bars[2], 'long', 'p1', 'p1'));
+act(() => result.current.addSaboMarker(bars[2], 'widen_spreads'));
+act(() => result.current.addPriceLine(105, 'SL', '#ef4444', 'sl1'));
+act(() => result.current.setHistory(bars.slice(0, 5)));
+log(`after setHistory(5) revealedCount=${result.current.revealedCount}`);
 
-if (result.current.currentIndex < 4) throw new Error('currentIndex did not advance');
-log('PASS controller state transitions');
+if (result.current.revealedCount !== 5) throw new Error('setHistory did not set revealed history');
+log('PASS streaming controller state transitions');
 
 mkdirSync(scratch, { recursive: true });
 writeFileSync(logPath, lines.join('\n') + '\n');

@@ -35,10 +35,13 @@ def _ws_recv_type(ws, want: str, max_msgs: int = 40) -> dict:
     raise AssertionError(f"no WS message type={want} within {max_msgs}")
 
 
-def run_once(label: str) -> list[str]:
+def run_once(label: str, lines: list[str] | None = None) -> list[str]:
     header: list[str] = [f"=== RUN {label} ==="]
     diagnostic: list[str] = []
     gating: list[str] = []
+    # ``lines`` (optional) is populated in-place for callers (e.g. tests) that
+    # pass a list to inspect; the assembled list is also returned.
+    sink = lines if lines is not None else None
 
     health = http("GET", "/health")
     header.append(f"health={health}")
@@ -55,6 +58,8 @@ def run_once(label: str) -> list[str]:
 
     if not ws_client:
         header.append("ws_skipped=websockets not installed")
+        if sink is not None:
+            sink.extend(header)
         return header
 
     deltas_seen = 0
@@ -136,7 +141,10 @@ def run_once(label: str) -> list[str]:
     assert replay["verify"]["verified"] is True
     assert float(replay["verify"]["final_equity"]["p1"]) != 100.0
 
-    return header + diagnostic + gating
+    out = header + diagnostic + gating
+    if sink is not None:
+        sink.extend(out)
+    return out
 
 
 def main():

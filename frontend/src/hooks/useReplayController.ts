@@ -8,6 +8,8 @@ import {
   LineStyle,
   type IChartApi,
   type ISeriesApi,
+  type IPriceLine,
+  type ISeriesMarkersPluginApi,
   type CandlestickData,
   type SeriesMarker,
   type LogicalRange,
@@ -17,61 +19,53 @@ import type { Bar } from '../types';
 
 interface UseReplayControllerProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  initialBars?: Bar[];
-  // WS integration support (GDD task-007): drive from server deltas
-  externalT?: number; // authoritative current T from backend delta/snapshot
-  externalBars?: Bar[]; // optional override bars
 }
 
-interface UseReplayControllerReturn {
-  isPlaying: boolean;
-  speed: number;
-  currentIndex: number;
-  play: () => void;
-  pause: () => void;
-  setSpeed: (s: number) => void;
-  seekTo: (idx: number) => void;
-  addPlayerMarker: (barIdx: number, isBuy: boolean, player?: 'p1' | 'p2') => void;
-  addSaboMarker: (barIdx: number, effect: string) => void;
-  addPriceLine: (price: number, title: string, color: string) => void;
-  clearPriceLines: () => void;
+export interface ReplayController {
+  // Streaming API (anti-cheat: bars are only revealed as the server emits them).
+  pushBar: (bar: Bar) => void;
+  setHistory: (bars: Bar[]) => void;
   reset: () => void;
-  currentBar: Bar | null;
+  revealedCount: number;
+  currentIndex: number; // compat: last revealed bar index
+  lastBar: Bar | null;
+  // Overlays
+  addFillMarker: (bar: Bar, side: 'long' | 'short' | string, player: string, you: string, label?: string) => void;
+  addSaboMarker: (bar: Bar, effect: string) => void;
+  clearMarkers: () => void;
+  addPriceLine: (price: number, title: string, color: string, id?: string) => void;
+  removePriceLine: (id: string) => void;
+  clearPriceLines: () => void;
+  // Refs (for advanced callers)
   chartRef: React.MutableRefObject<IChartApi | null>;
   seriesRef: React.MutableRefObject<ISeriesApi<'Candlestick'> | null>;
-  // WS-driven update for real deltas: series.update + set range from server T/current bar (GDD flow)
-  updateFromServer: (barOrT: Bar | number, maybeBar?: Bar) => void;
 }
 
-const BASE_INTERVAL_MS = 800;
+const WINDOW = 40; // number of bars kept visible behind the live edge
+const RIGHT_OFFSET = 4;
 
-export function useReplayController({ containerRef, initialBars = [], externalT, externalBars }: UseReplayControllerProps): UseReplayControllerReturn {
+export function useReplayController({ containerRef }: UseReplayControllerProps): ReplayController {
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const priceLinesRef = useRef<any[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const markersApiRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
+  const markersRef = useRef<SeriesMarker<Time>[]>([]);
+  const priceLineMapRef = useRef<Map<string, IPriceLine>>(new Map());
+  const lastTimeRef = useRef<number>(-Infinity);
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeedState] = useState(1);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const effectiveBars = externalBars && externalBars.length > 0 ? externalBars : initialBars;
-  const [bars, setBars] = useState<Bar[]>(effectiveBars);
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [lastBar, setLastBar] = useState<Bar | null>(null);
 
-  const currentBar = bars[currentIndex] ?? null;
-
-  // WS driven: use series.update(bar) + setVisibleLogicalRange for server T (per task-007, LW realtime + replay patterns)
-  const updateFromServer = useCallback((barOrT: Bar | number, maybeBar?: Bar) => {
-    const series = seriesRef.current;
+  const followRange = useCallback((idx: number) => {
     const chart = chartRef.current;
-    if (!series || !chart || bars.length === 0) return;
+    if (!chart) return;
+    const from = Math.max(0, idx - WINDOW);
+    chart.timeScale().setVisibleLogicalRange({ from, to: idx + RIGHT_OFFSET } as LogicalRange);
+  }, []);
 
-    let idx = typeof barOrT === 'number' ? Math.floor(barOrT) : barOrT.time;
-    let bar = typeof barOrT === 'number' ? (maybeBar || bars[Math.min(idx, bars.length-1)]) : barOrT;
-    if (!bar) return;
-
-    idx = Math.min(Math.max(0, idx), bars.length - 1);
-
-    // use UPDATE not setData for streaming deltas
+  // Append (or replace the in-progress) candle revealed by the server.
+  const pushBar = useCallback((bar: Bar) => {
+    const series = seriesRef.current;
+    if (!series || !bar) return;
     series.update({
       time: bar.time as Time,
       open: bar.open,
@@ -80,29 +74,136 @@ export function useReplayController({ containerRef, initialBars = [], externalT,
       close: bar.close,
     } as CandlestickData);
 
-    // follow server T with logical range
-    const windowSize = 22;
-    const from = Math.max(0, idx - windowSize);
-    chart.timeScale().setVisibleLogicalRange({ from, to: idx + 5 } as LogicalRange);
+    const isNew = bar.time > lastTimeRef.current;
+    lastTimeRef.current = bar.time;
+    setLastBar(bar);
+    setRevealedCount((c) => {
+      const next = isNew ? c + 1 : c;
+      followRange(Math.max(0, next - 1));
+      return next;
+    });
+  }, [followRange]);
 
-    setCurrentIndex(idx);
-  }, [bars]);
-
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+  // Used for offline replay seeding or reconnect with revealed history.
+  const setHistory = useCallback((bars: Bar[]) => {
+    const series = seriesRef.current;
+    const chart = chartRef.current;
+    if (!series || bars.length === 0) return;
+    series.setData(
+      bars.map((b) => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })),
+    );
+    lastTimeRef.current = bars[bars.length - 1].time;
+    setLastBar(bars[bars.length - 1]);
+    setRevealedCount(bars.length);
+    chart?.timeScale().setVisibleLogicalRange({ from: Math.max(0, bars.length - WINDOW), to: bars.length + RIGHT_OFFSET } as LogicalRange);
   }, []);
 
-  const initChart = useCallback((data: Bar[]) => {
+  const ensureMarkersApi = useCallback(() => {
+    const series = seriesRef.current;
+    if (!series) return null;
+    if (!markersApiRef.current) {
+      markersApiRef.current = createSeriesMarkers(series, []);
+    }
+    return markersApiRef.current;
+  }, []);
+
+  const commitMarkers = useCallback(() => {
+    const api = ensureMarkersApi();
+    api?.setMarkers([...markersRef.current]);
+  }, [ensureMarkersApi]);
+
+  const addFillMarker = useCallback((bar: Bar, side: string, player: string, you: string, label?: string) => {
+    if (!bar) return;
+    const isBuy = side === 'long' || side === 'buy';
+    const isMe = player === you;
+    const color = isMe ? (isBuy ? '#22c55e' : '#ef4444') : (isBuy ? '#3b82f6' : '#f97316');
+    const m: SeriesMarker<Time> = {
+      time: bar.time as Time,
+      position: isBuy ? 'belowBar' : 'aboveBar',
+      color,
+      shape: isBuy ? 'arrowUp' : 'arrowDown',
+      text: label ?? `${isMe ? 'YOU' : 'OPP'} ${isBuy ? 'BUY' : 'SELL'}`,
+    };
+    markersRef.current = [...markersRef.current, m].slice(-60);
+    commitMarkers();
+  }, [commitMarkers]);
+
+  const addSaboMarker = useCallback((bar: Bar, effect: string) => {
+    if (!bar) return;
+    const m: SeriesMarker<Time> = {
+      time: bar.time as Time,
+      position: 'inBar',
+      color: '#a855f7',
+      shape: 'square',
+      text: `SABO:${effect}`,
+    };
+    markersRef.current = [...markersRef.current, m].slice(-60);
+    commitMarkers();
+  }, [commitMarkers]);
+
+  const clearMarkers = useCallback(() => {
+    markersRef.current = [];
+    markersApiRef.current?.setMarkers([]);
+  }, []);
+
+  const addPriceLine = useCallback((price: number, title: string, color: string, id?: string) => {
+    const series = seriesRef.current;
+    if (!series) return;
+    const key = id ?? `${title}:${price.toFixed(2)}`;
+    const existing = priceLineMapRef.current.get(key);
+    if (existing) {
+      existing.applyOptions({ price, color, title });
+      return;
+    }
+    const pl = series.createPriceLine({ price, color, lineWidth: 2, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title });
+    priceLineMapRef.current.set(key, pl);
+  }, []);
+
+  const removePriceLine = useCallback((id: string) => {
+    const series = seriesRef.current;
+    const pl = priceLineMapRef.current.get(id);
+    if (pl && series) {
+      try { series.removePriceLine(pl); } catch {}
+      priceLineMapRef.current.delete(id);
+    }
+  }, []);
+
+  const clearPriceLines = useCallback(() => {
+    const series = seriesRef.current;
+    priceLineMapRef.current.forEach((pl) => { try { series?.removePriceLine(pl); } catch {} });
+    priceLineMapRef.current.clear();
+  }, []);
+
+  const reset = useCallback(() => {
+    const series = seriesRef.current;
+    clearMarkers();
+    clearPriceLines();
+    try { series?.setData([]); } catch {}
+    lastTimeRef.current = -Infinity;
+    setRevealedCount(0);
+    setLastBar(null);
+  }, [clearMarkers, clearPriceLines]);
+
+  // Create the chart once.
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-
-    if (chartRef.current) { try { chartRef.current.remove(); } catch {} chartRef.current = null; seriesRef.current = null; priceLinesRef.current = []; }
+    let removed = false;
 
     const chart = createChart(container, {
-      width: container.clientWidth, height: 420,
+      width: container.clientWidth,
+      height: 420,
       layout: { background: { color: '#0b0e14' }, textColor: '#9ca3af' },
       grid: { vertLines: { color: '#1f252e' }, horzLines: { color: '#1f252e' } },
-      timeScale: { borderColor: '#2a313a', rightOffset: 5, barSpacing: 6 },
+      timeScale: {
+        borderColor: '#2a313a',
+        rightOffset: RIGHT_OFFSET,
+        barSpacing: 8,
+        tickMarkFormatter: (time: Time) => `Day ${Math.round(Number(time))}`,
+      },
+      localization: {
+        timeFormatter: (time: Time) => `Sim Day ${Math.round(Number(time))}`,
+      },
       rightPriceScale: { borderColor: '#2a313a', scaleMargins: { top: 0.1, bottom: 0.1 } },
     });
 
@@ -112,106 +213,41 @@ export function useReplayController({ containerRef, initialBars = [], externalT,
       wickUpColor: '#22c55e', wickDownColor: '#ef4444',
     }) as ISeriesApi<'Candlestick'>;
 
-    chartRef.current = chart; seriesRef.current = series;
+    chartRef.current = chart;
+    seriesRef.current = series;
 
-    if (data.length > 0) {
-      series.setData(data.map(b => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })));
-      chart.timeScale().setVisibleLogicalRange({ from: -1, to: Math.min(22, data.length) } as LogicalRange);
-    }
-
-    const handleResize = () => { if (chartRef.current) chartRef.current.resize(container.clientWidth, 420); };
+    const handleResize = () => {
+      if (!removed && chartRef.current) chartRef.current.resize(container.clientWidth, 420);
+    };
     window.addEventListener('resize', handleResize);
-    (chart as any)._resizeCleanup = () => window.removeEventListener('resize', handleResize);
+
+    return () => {
+      removed = true;
+      window.removeEventListener('resize', handleResize);
+      try { chart.remove(); } catch {}
+      chartRef.current = null;
+      seriesRef.current = null;
+      markersApiRef.current = null;
+      markersRef.current = [];
+      priceLineMapRef.current.clear();
+      lastTimeRef.current = -Infinity;
+    };
   }, [containerRef]);
 
-  useEffect(() => {
-    if (initialBars.length > 0) {
-      setBars(initialBars); setCurrentIndex(0); setIsPlaying(false); clearTimer(); initChart(initialBars);
-    }
-  }, [initialBars, initChart, clearTimer]);
-
-  const advanceOne = useCallback(() => {
-    const series = seriesRef.current; if (!series || bars.length === 0) return;
-    const nextIdx = Math.min(currentIndex + 1, bars.length - 1);
-    if (nextIdx === currentIndex) { setIsPlaying(false); clearTimer(); return; }
-    const bar = bars[nextIdx];
-    series.update({ time: bar.time as Time, open: bar.open, high: bar.high, low: bar.low, close: bar.close } as CandlestickData);
-    const chart = chartRef.current;
-    if (chart) {
-      const from = Math.max(0, nextIdx - 18); chart.timeScale().setVisibleLogicalRange({ from, to: nextIdx + 4 } as LogicalRange);
-    }
-    setCurrentIndex(nextIdx);
-  }, [bars, currentIndex, clearTimer]);
-
-  useEffect(() => {
-    clearTimer();
-    if (!isPlaying || speed <= 0 || bars.length === 0) return;
-    const ms = Math.max(120, Math.floor(BASE_INTERVAL_MS / speed));
-    intervalRef.current = setInterval(advanceOne, ms);
-    return clearTimer;
-  }, [isPlaying, speed, bars.length, advanceOne, clearTimer]);
-
-  const play = useCallback(() => { if (currentIndex >= bars.length - 1) setCurrentIndex(0); setIsPlaying(true); }, [currentIndex, bars.length]);
-  const pause = useCallback(() => { setIsPlaying(false); clearTimer(); }, [clearTimer]);
-  const setSpeed = useCallback((s: number) => setSpeedState(Math.max(1, Math.min(5, Math.floor(s)))), []);
-  const seekTo = useCallback((idx: number) => {
-    const c = Math.max(0, Math.min(idx, bars.length - 1)); setCurrentIndex(c); setIsPlaying(false); clearTimer();
-    const s = seriesRef.current; const ch = chartRef.current;
-    if (s && ch && bars.length) {
-      s.setData(bars.slice(0, c + 1).map(b => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })));
-      ch.timeScale().setVisibleLogicalRange({ from: Math.max(0, c - 18), to: c + 4 } as LogicalRange);
-    }
-  }, [bars, clearTimer]);
-
-  const addPlayerMarker = useCallback((barIdx: number, isBuy: boolean, player: 'p1' | 'p2' = 'p1') => {
-    const series = seriesRef.current; if (!series || !bars[barIdx]) return;
-    const color = player === 'p1' ? (isBuy ? '#22c55e' : '#ef4444') : (isBuy ? '#3b82f6' : '#f97316');
-    const m: SeriesMarker<Time> = { time: bars[barIdx].time as Time, position: isBuy ? 'belowBar' : 'aboveBar', color, shape: isBuy ? 'arrowUp' : 'arrowDown', text: `${player.toUpperCase()}:${isBuy ? 'BUY' : 'SELL'}`, size: 2 };
-    try { createSeriesMarkers(series, [m] as any); } catch { (series as any).setMarkers?.([m]); }
-  }, [bars]);
-
-  const addSaboMarker = useCallback((barIdx: number, effect: string) => {
-    const series = seriesRef.current; if (!series || !bars[barIdx]) return;
-    const m: SeriesMarker<Time> = { time: bars[barIdx].time as Time, position: 'inBar', color: '#a855f7', shape: 'square', text: `SABO:${effect}`, size: 1.5 };
-    try { createSeriesMarkers(series, [m] as any); } catch { (series as any).setMarkers?.([m]); }
-  }, [bars]);
-
-  const addPriceLine = useCallback((price: number, title: string, color: string) => {
-    const series = seriesRef.current; if (!series) return;
-    priceLinesRef.current.push(series.createPriceLine({ price, color, lineWidth: 2, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title }));
-  }, []);
-  const clearPriceLines = useCallback(() => {
-    const series = seriesRef.current;
-    priceLinesRef.current.forEach(pl => { try { series?.removePriceLine(pl); } catch {} });
-    priceLinesRef.current = [];
-  }, []);
-
-  const reset = useCallback(() => {
-    setIsPlaying(false); clearTimer(); setCurrentIndex(0);
-    if (seriesRef.current && bars.length) {
-      seriesRef.current.setData(bars.map(b => ({ time: b.time as Time, open: b.open, high: b.high, low: b.low, close: b.close })));
-      chartRef.current?.timeScale().setVisibleLogicalRange({ from: -1, to: 22 } as LogicalRange);
-    }
-    clearPriceLines();
-  }, [bars, clearTimer, clearPriceLines]);
-
-  useEffect(() => () => { clearTimer(); if (chartRef.current) { try { (chartRef.current as any).remove(); } catch {} } }, [clearTimer]);
-
-  // WS deltas: follow external authoritative T (from snapshot/delta) - set range + update current bar using series.update
-  useEffect(() => {
-    if (typeof externalT === 'number' && bars.length > 0) {
-      const idx = Math.min(Math.max(0, Math.floor(externalT)), bars.length - 1);
-      const bar = bars[idx];
-      const series = seriesRef.current;
-      const chart = chartRef.current;
-      if (bar && series && chart) {
-        series.update({ time: bar.time as Time, open: bar.open, high: bar.high, low: bar.low, close: bar.close } as CandlestickData);
-        const from = Math.max(0, idx - 20);
-        chart.timeScale().setVisibleLogicalRange({ from, to: idx + 5 } as LogicalRange);
-        setCurrentIndex(idx);
-      }
-    }
-  }, [externalT, bars]);
-
-  return { isPlaying, speed, currentIndex, play, pause, setSpeed, seekTo, addPlayerMarker, addSaboMarker, addPriceLine, clearPriceLines, reset, currentBar, chartRef, seriesRef, updateFromServer };
+  return {
+    pushBar,
+    setHistory,
+    reset,
+    revealedCount,
+    currentIndex: Math.max(0, revealedCount - 1),
+    lastBar,
+    addFillMarker,
+    addSaboMarker,
+    clearMarkers,
+    addPriceLine,
+    removePriceLine,
+    clearPriceLines,
+    chartRef,
+    seriesRef,
+  };
 }

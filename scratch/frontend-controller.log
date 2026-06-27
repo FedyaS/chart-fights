@@ -5,8 +5,9 @@ OK static src/components/ChartView.tsx
 OK static src/components/ResourceBars.tsx
 OK static src/components/SaboPanel.tsx
 OK page.tsx wires submit_order to sendWSAction
-initial index=0
-seekTo(4) index=4
-updateFromServer(6) index=6
-play isPlaying=true
-PASS controller state transitions
+OK page.tsx wires tb_influence + ip_spend to sendWSAction
+initial revealedCount=0
+after 3 pushBar revealedCount=3
+after re-push latest revealedCount=3
+after setHistory(5) revealedCount=5
+PASS streaming controller state transitions

@@ -1,225 +1,581 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArenaLobby } from '../components/ArenaLobby';
 import { ChartView } from '../components/ChartView';
 import { ResourceBars } from '../components/ResourceBars';
-import { SaboPanel } from '../components/SaboPanel';
+import { SaboPanel, type Ability } from '../components/SaboPanel';
 import { OrderPanel } from '../components/OrderPanel';
 import { VoicePanel } from '../components/VoicePanel';
 import { EventLog } from '../components/EventLog';
+import { Scoreboard } from '../components/Scoreboard';
+import { EndScreen } from '../components/EndScreen';
 import { SAMPLE_ARENAS } from '../lib/sampleArenas';
-import type { Arena, LogEvent, Bar } from '../types';
+import { useVoiceChat, type VoiceSignalType } from '../hooks/useVoiceChat';
+import type { ReplayController } from '../hooks/useReplayController';
+import {
+  toBar, num, parsePlayersMap, applyResources, resolveTempo,
+  parseEvents, parseFills, otherPlayer,
+} from '../lib/matchState';
+import type {
+  Arena, Bar, LogEvent, PlayerState, TempoLevel, TempoState,
+  MatchInfo, MatchEndResult, GameEvent,
+} from '../types';
 
-// Config: native WS to backend. ws://localhost:8000/ws/{match} (or NEXT_PUBLIC_BACKEND_URL for Fly)
-// (In GameUI/ReplayController equivalent: connect, deltas for tb/ip/current bar, pass to series.update + range)
-const BACKEND_URL = typeof window !== 'undefined' ? ((window as any).CHART_BACKEND || (process as any)?.env?.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000') : 'http://localhost:8000';
-const WS_BASE = BACKEND_URL.replace('https:', 'wss:').replace('http:', 'ws:');
+const BACKEND_URL =
+  (typeof window !== 'undefined' && (window as any).CHART_BACKEND) ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  'http://localhost:8001';
+const WS_BASE = BACKEND_URL.replace(/^http/, 'ws');
+
+const STARTING_CAPITAL = 100;
+const OFFLINE_BASE_MS = 900; // 1 day per ~0.9s at R=1 (offline only)
+
+const levelToR = (l: TempoLevel): number => (l === 'pause' ? 0 : l === 'ff2' ? 2 : l === 'ff3' ? 3 : l === 'ff5' ? 5 : 1);
+
+const LOG_TYPES: LogEvent['type'][] = ['order', 'sabo', 'tb', 'voice', 'info', 'fill', 'news', 'peek'];
+const toLogType = (t: string): LogEvent['type'] => (LOG_TYPES.includes(t as any) ? (t as LogEvent['type']) : 'info');
+
+type View = 'lobby' | 'match' | 'ended';
+
+const emptyTempo: TempoState = { R: 1, contested: false, myLevel: 'base' };
 
 export default function ChartFightsApp() {
-  const [matchState, setMatchState] = useState<'lobby' | 'match'>('lobby');
-  const [selectedArena, setSelectedArena] = useState<Arena | null>(null);
-  const [currentBars, setCurrentBars] = useState<Bar[]>([]);
-  // Real WS match state (per user task + GDD): connect ws://.../ws/{match}, deltas update tb/ip/T
-  const [matchId, setMatchId] = useState<string | null>(null);
-  const [serverT, setServerT] = useState<number>(0);
-  const wsRef = useRef<WebSocket | null>(null);
-  const [realArenas, setRealArenas] = useState<any[]>([]);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [view, setView] = useState<View>('lobby');
+  const [arenas, setArenas] = useState<Arena[]>(SAMPLE_ARENAS);
   const [loadingArenas, setLoadingArenas] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [selectedArenaId, setSelectedArenaId] = useState<string | undefined>();
 
-  const [tb, setTb] = useState(82); const [ip, setIp] = useState(64); const [currentR, setCurrentR] = useState(1);
+  const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
+  const [mode, setMode] = useState<'server' | 'offline'>('server');
+  const [you, setYou] = useState<string>('p1');
+  const [T, setT] = useState(0);
+  const [tempo, setTempo] = useState<TempoState>(emptyTempo);
+  const [players, setPlayers] = useState<Record<string, PlayerState>>({});
+  const [currentBar, setCurrentBar] = useState<Bar | null>(null);
   const [events, setEvents] = useState<LogEvent[]>([]);
-  const [ctrl, setCtrl] = useState<any>(null);
-  const [pendingMarkers, setPendingMarkers] = useState<any[]>([]); const [pendingSabo, setPendingSabo] = useState<any[]>([]);
-  const [displayT, setDisplayT] = useState(0);
+  const [endResult, setEndResult] = useState<MatchEndResult | null>(null);
 
-  const addLog = useCallback((type: LogEvent['type'], message: string, t = 0) => { setEvents(p => [...p, { t: t || (ctrl?.currentIndex || 0), type, message }].slice(-30)); }, [ctrl]);
+  const [joinId, setJoinId] = useState('');
+  const [joinAs, setJoinAs] = useState<'p1' | 'p2'>('p2');
 
-  // Load real arena list from /arenas (GDD lobby + task-007)
-  useEffect(() => {
-    setLoadingArenas(true); // note: declare loading if want spinner, stub ok
-    fetch(`${BACKEND_URL}/arenas`).then(r => r.json()).then(d => {
-      const list = (d.arenas || []).map((a: any) => ({ id: a.id, name: `${a.ticker || a.id} Arena`, ticker: a.ticker, description: `bars:${a.bars || '?'}`, bars: [] }));
-      setRealArenas(list.length ? list : SAMPLE_ARENAS.map(a => ({...a, bars: a.bars})));
-    }).catch(() => setRealArenas(SAMPLE_ARENAS)).finally(() => setLoadingArenas(false));
+  // refs for use inside stable WS / timer closures
+  const wsRef = useRef<WebSocket | null>(null);
+  const ctrlRef = useRef<ReplayController | null>(null);
+  const youRef = useRef('p1');
+  const playersRef = useRef<Record<string, PlayerState>>({});
+  const currentBarRef = useRef<Bar | null>(null);
+  const revealedBarsRef = useRef<Bar[]>([]);
+  const myLevelRef = useRef<TempoLevel>('base');
+  const modeRef = useRef<'server' | 'offline'>('server');
+  const gotSnapshotRef = useRef(false);
+  const voiceHandleRef = useRef<((t: VoiceSignalType, p: any) => void) | null>(null);
+
+  // offline simulation refs
+  const offlineBarsRef = useRef<Bar[]>([]);
+  const offlineIdxRef = useRef(-1);
+  const offlineRealizedRef = useRef(0);
+
+  const addLog = useCallback((type: LogEvent['type'], message: string, t?: number) => {
+    setEvents((prev) => [...prev, { t: t ?? Math.round(currentBarRef.current?.time ?? 0), type, message }].slice(-60));
   }, []);
 
-  // Helper to send WS action (tempo influence, ip_spend)
-  const sendWSAction = (actionType: string, payload: any) => {
+  // ---- send helpers -----------------------------------------------------
+  const sendRaw = useCallback((obj: any) => {
     const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: 'action', action_type: actionType, payload }));
-    }
-  };
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+  }, []);
+  const sendWSAction = useCallback((actionType: string, payload: any) => {
+    sendRaw({ type: 'action', action_type: actionType, payload });
+  }, [sendRaw]);
 
-  // Create real match + connect WS native. Mock equity from deltas for now.
-  const startRealMatch = async (arena: any) => {
-    const arenaId = arena.id || 'AAPL_00000';
-    setIsConnecting(true);
+  const sendVoiceSignal = useCallback((type: VoiceSignalType, payload: any) => {
+    sendRaw({ type, payload });
+  }, [sendRaw]);
+
+  const voice = useVoiceChat(sendVoiceSignal);
+  useEffect(() => { voiceHandleRef.current = voice.handleSignal; }, [voice.handleSignal]);
+
+  // ---- arenas -----------------------------------------------------------
+  useEffect(() => {
+    setLoadingArenas(true);
+    fetch(`${BACKEND_URL}/arenas`)
+      .then((r) => r.json())
+      .then((d) => {
+        const list: Arena[] = (d.arenas || []).map((a: any) => ({
+          id: a.id,
+          name: `${a.ticker || a.id}`,
+          ticker: a.ticker || a.id,
+          description: `${a.bars ?? '?'} bars${a.start ? ` • from ${a.start}` : ''}`,
+          bars: [],
+          numBars: a.bars,
+        }));
+        setArenas(list.length ? list : SAMPLE_ARENAS);
+      })
+      .catch(() => setArenas(SAMPLE_ARENAS))
+      .finally(() => setLoadingArenas(false));
+  }, []);
+
+  // ---- chart bar plumbing ----------------------------------------------
+  const pushBarToChart = useCallback((bar: Bar) => {
+    const arr = revealedBarsRef.current;
+    if (arr.length && arr[arr.length - 1].time === bar.time) {
+      arr[arr.length - 1] = bar; // replace in-progress candle
+    } else if (!arr.length || bar.time > arr[arr.length - 1].time) {
+      arr.push(bar);
+    } else {
+      return; // out-of-order / stale, ignore
+    }
+    currentBarRef.current = bar;
+    setCurrentBar(bar);
+    ctrlRef.current?.pushBar(bar);
+  }, []);
+
+  const handleCtrl = useCallback((c: ReplayController) => {
+    ctrlRef.current = c;
+    // Replay any already-revealed (past) bars so a late chart mount / reconnect catches up.
+    if (revealedBarsRef.current.length) c.setHistory(revealedBarsRef.current);
+  }, []);
+
+  const resetMatchState = useCallback(() => {
+    revealedBarsRef.current = [];
+    currentBarRef.current = null;
+    playersRef.current = {};
+    offlineBarsRef.current = [];
+    offlineIdxRef.current = -1;
+    offlineRealizedRef.current = 0;
+    gotSnapshotRef.current = false;
+    myLevelRef.current = 'base';
+    setPlayers({});
+    setCurrentBar(null);
+    setEvents([]);
+    setEndResult(null);
+    setT(0);
+    setTempo(emptyTempo);
+  }, []);
+
+  // ---- WS message handling ---------------------------------------------
+  const handleMessage = useCallback((msg: any) => {
+    if (!msg || typeof msg !== 'object') return;
+
+    if (msg.type === 'snapshot') {
+      gotSnapshotRef.current = true;
+      const st = msg.state ?? msg;
+      const yid = msg.you ?? st.you ?? 'p1';
+      youRef.current = yid; setYou(yid);
+
+      const bar = toBar(st.current_bar);
+      if (bar) pushBarToChart(bar);
+      const mark = bar?.close ?? STARTING_CAPITAL;
+
+      const parsed = parsePlayersMap(st.players, mark);
+      playersRef.current = parsed; setPlayers(parsed);
+
+      setTempo(resolveTempo(st.tb, st.r ?? msg.r, yid, myLevelRef.current));
+      setT(num(st.T ?? msg.t ?? bar?.time ?? 0));
+
+      const evs = parseEvents(st.recent_events);
+      setEvents(evs.map((e) => toLog(e)).slice(-60));
+      return;
+    }
+
+    if (msg.type === 'delta') {
+      const bar = toBar(msg.current_bar);
+      if (bar) pushBarToChart(bar);
+      const mark = bar?.close ?? currentBarRef.current?.close ?? STARTING_CAPITAL;
+
+      let next = playersRef.current;
+      next = applyResources(next, msg.resources, mark);
+      playersRef.current = next; setPlayers(next);
+
+      setTempo(resolveTempo(msg.tb, msg.r, youRef.current, myLevelRef.current));
+      setT(num(msg.t ?? bar?.time ?? 0));
+
+      const fills = parseFills(msg.fills);
+      for (const f of fills) {
+        const fbar = revealedBarsRef.current.find((b) => b.time === f.t) ?? currentBarRef.current;
+        if (fbar) ctrlRef.current?.addFillMarker(fbar, f.side, f.player, youRef.current);
+        const who = f.player === youRef.current ? 'YOU' : 'OPP';
+        addLog('fill', `${who} ${String(f.side).toUpperCase()} ${f.size} @ ${f.price.toFixed(2)} (${f.type})`, f.t);
+      }
+
+      const evs = parseEvents(msg.events);
+      for (const e of evs) {
+        addLog(toLogType(e.type), e.message, e.t);
+        if (e.type === 'sabo' && currentBarRef.current) ctrlRef.current?.addSaboMarker(currentBarRef.current, e.ability ?? 'hit');
+      }
+      return;
+    }
+
+    if (msg.type === 'match_end') {
+      const fin = msg.final ?? {};
+      const mark = toBar(fin.current_bar)?.close ?? currentBarRef.current?.close ?? STARTING_CAPITAL;
+      let finalPlayers = parsePlayersMap(fin.players, mark);
+      if (Object.keys(finalPlayers).length === 0) finalPlayers = playersRef.current;
+      const yid = youRef.current;
+      const winner = resolveWinner(msg.winner ?? fin.winner, finalPlayers, yid);
+      setEndResult({ winner, players: finalPlayers, you: yid, contentHash: msg.content_hash });
+      setView('ended');
+      closeWs();
+      return;
+    }
+
+    if (msg.type === 'voice_offer' || msg.type === 'voice_answer' || msg.type === 'voice_ice') {
+      voiceHandleRef.current?.(msg.type, msg.payload);
+      return;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addLog, pushBarToChart]);
+
+  const toLog = useCallback((e: GameEvent): LogEvent => ({
+    t: Math.round(e.t ?? currentBarRef.current?.time ?? 0),
+    type: toLogType(e.type),
+    message: e.message,
+  }), []);
+
+  const closeWs = useCallback(() => {
+    if (wsRef.current) { try { wsRef.current.close(); } catch {} wsRef.current = null; }
+  }, []);
+
+  const connectWs = useCallback((info: MatchInfo) => {
+    closeWs();
+    modeRef.current = 'server'; setMode('server');
+    youRef.current = info.you; setYou(info.you);
+    setMatchInfo(info);
+    setView('match');
+
     try {
-      // 1. POST /matches to get id (GDD flow)
+      const ws = new WebSocket(info.wsUrl);
+      wsRef.current = ws;
+      ws.onopen = () => addLog('info', `Connected to match ${info.matchId} as ${info.you}`);
+      ws.onmessage = (ev) => { try { handleMessage(JSON.parse(ev.data)); } catch {} };
+      ws.onerror = () => addLog('info', 'WS error');
+      ws.onclose = () => {
+        if (wsRef.current === ws) wsRef.current = null;
+        if (!gotSnapshotRef.current && modeRef.current === 'server') {
+          addLog('info', 'Backend unreachable — switching to offline practice mode');
+          startOffline(arenaForOffline(info.arenaId));
+        }
+      };
+    } catch {
+      startOffline(arenaForOffline(info.arenaId));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addLog, handleMessage, closeWs]);
+
+  const arenaForOffline = useCallback((arenaId?: string): Arena => {
+    return SAMPLE_ARENAS.find((a) => a.id === arenaId) ?? SAMPLE_ARENAS[0];
+  }, []);
+
+  // ---- create / join ----------------------------------------------------
+  const createMatch = useCallback(async (arena: Arena) => {
+    setSelectedArenaId(arena.id);
+    setConnecting(true);
+    resetMatchState();
+    try {
       const resp = await fetch(`${BACKEND_URL}/matches`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ arena_id: arenaId, player_ids: ['p1'] }),
+        body: JSON.stringify({ arena_id: arena.id, player_ids: ['p1', 'p2'] }),
       });
+      if (!resp.ok) throw new Error(`POST /matches ${resp.status}`);
       const data = await resp.json();
-      const mId = data.match_id;
-      setMatchId(mId);
-
-      // Use real-ish bars: match sample or default
-      let barsForChart: Bar[] = (arena.bars && arena.bars.length) ? arena.bars : [];
-      if (!barsForChart.length) {
-        const matchSample = SAMPLE_ARENAS.find(s => s.id === arenaId) || SAMPLE_ARENAS[0];
-        barsForChart = matchSample.bars as any;
-      }
-      setSelectedArena({ ...(arena as Arena), name: arena.name || arenaId, bars: barsForChart as any });
-      setCurrentBars(barsForChart as any);
-      setMatchState('match');
-      setTb(50); setIp(50); setCurrentR(1); setServerT(0); setEvents([]);
-
-      // 2. Connect native WS ws://.../ws/{match}?player_id=p1
-      const wsUrl = `${WS_BASE}/ws/${mId}?player_id=p1`;
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        addLog('info', `WS connected to match ${mId}`);
+      const info: MatchInfo = {
+        matchId: data.match_id,
+        arenaId: data.arena_id ?? arena.id,
+        arenaLabel: data.arena_label ?? arena.name,
+        arenaHash: data.arena_hash,
+        contentHash: data.content_hash,
+        numBars: data.num_bars ?? arena.numBars,
+        wsUrl: `${WS_BASE}/ws/${data.match_id}?player_id=p1`,
+        you: 'p1',
       };
-
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg.type === 'snapshot' || msg.type === 'delta') {
-            const t = typeof msg.t === 'number' ? msg.t : (msg.state?.T ?? serverT);
-            setServerT(t);
-            // Update state from delta (tb, ip, current bar T)
-            if (msg.resources) {
-              // resources {p1: {ip, equity}, ...}
-              const p = msg.resources.p1 || Object.values(msg.resources)[0] as any;
-              if (p) {
-                if (typeof p.ip === 'number') setIp(Math.floor(p.ip));
-                // equity mock for now
-              }
-            }
-            if (msg.r != null) setCurrentR(msg.r);
-            if (msg.tb && msg.tb.tbs) {
-              // server tb snapshot per player
-              const myTb = msg.tb.tbs.p1 || Object.values(msg.tb.tbs)[0];
-              if (typeof myTb === 'number') setTb(myTb);
-            }
-            // Pass real updates to Replay: use updateFromServer or T drive
-            if (ctrl && ctrl.updateFromServer && currentBars.length) {
-              const barIdx = Math.floor(t);
-              const bar = currentBars[barIdx] || currentBars[currentBars.length-1];
-              if (bar) ctrl.updateFromServer(barIdx, bar);
-            }
-            addLog('info', `Delta T=${t.toFixed(1)} R=${msg.r ?? currentR}`);
-          } else if (msg.type === 'match_end') {
-            addLog('info', 'Match ended');
-          }
-        } catch {}
-      };
-
-      ws.onclose = () => { addLog('info', 'WS closed'); wsRef.current = null; };
-      ws.onerror = () => addLog('info', 'WS error (fall to mock)');
-
-      // Send initial if needed
-    } catch (e) {
-      addLog('info', 'Backend not reachable, using local match');
-      // Fallback to local sample
-      setSelectedArena(arena); setCurrentBars(arena.bars || SAMPLE_ARENAS[0].bars); setMatchState('match');
+      connectWs(info);
+    } catch {
+      addLog('info', 'Backend not reachable — starting offline practice match');
+      startOffline(arena);
     } finally {
-      setIsConnecting(false);
+      setConnecting(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectWs, resetMatchState, addLog]);
 
-  const enterMatch = (arena: Arena) => {
-    // Real path: create match then WS (GDD lobby flow)
-    startRealMatch(arena);
-  };
-  const exitToLobby = () => {
-    setMatchState('lobby'); setMatchId(null); setServerT(0);
-    if (wsRef.current) { try { wsRef.current.close(); } catch {} wsRef.current = null; }
-    if (ctrl) ctrl.pause(); setCtrl(null);
-  };
+  const joinExisting = useCallback(() => {
+    const id = joinId.trim();
+    if (!id) return;
+    resetMatchState();
+    const info: MatchInfo = {
+      matchId: id,
+      arenaId: '',
+      arenaLabel: `Match ${id}`,
+      wsUrl: `${WS_BASE}/ws/${id}?player_id=${joinAs}`,
+      you: joinAs,
+    };
+    connectWs(info);
+  }, [joinId, joinAs, connectWs, resetMatchState]);
 
-  const handlePlay = () => { if (ctrl) { ctrl.play(); setCurrentR(ctrl.speed); addLog('tb', `Play @ ${ctrl.speed}x`); } };
-  const handlePause = () => { if (ctrl) { ctrl.pause(); setCurrentR(0); addLog('tb', 'Paused'); setTb(v => Math.min(100, v + 6)); } };
-  const handleSpeed = (s: number) => { if (ctrl) { ctrl.setSpeed(s); setCurrentR(s); addLog('tb', `Set speed ×${s}`); setTb(v => Math.max(0, v - (s > 1 ? 3 : 0))); } };
-  const handleTBAction = (mult?: number) => { if (!ctrl) return; const lvl = mult ? (mult===2?'ff2':mult===3?'ff3':mult===5?'ff5':'base') : 'pause'; sendWSAction('tb_influence', {level: lvl}); if (mult) { ctrl.setSpeed(mult); setCurrentR(mult); setTb(v => Math.max(0, v - (mult===5?14:mult===3?7:3))); addLog('tb', `FF ×${mult} [WS sent]`); } else { ctrl.pause(); setCurrentR(0); setTb(v => Math.min(100, v + 7)); addLog('tb', 'Pause [WS sent]'); } };
-  const handleOrder = (ord: any) => {
-    const t = ctrl?.currentIndex || 0; const price = ord.price || (currentBars[t]?.close || 100);
-    sendWSAction('submit_order', {
-      type: ord.type,
-      instr: 'X',
-      side: ord.side,
-      size: ord.size,
-      ...(ord.price != null ? { price: ord.price } : {}),
+  // ---- offline practice simulation -------------------------------------
+  const startOffline = useCallback((arena: Arena) => {
+    resetMatchState();
+    modeRef.current = 'offline'; setMode('offline');
+    youRef.current = 'p1'; setYou('p1');
+    const bars = (arena.bars && arena.bars.length ? arena.bars : SAMPLE_ARENAS[0].bars);
+    offlineBarsRef.current = bars;
+    offlineIdxRef.current = 0;
+    const first = bars[0];
+    const initPlayers: Record<string, PlayerState> = {
+      p1: { id: 'p1', ip: 50, equity: STARTING_CAPITAL, pnl: 0, unrealized: 0, tb: 100, positions: [], orders: [] },
+      p2: { id: 'p2', ip: 50, equity: STARTING_CAPITAL, pnl: 0, unrealized: 0, tb: 100, positions: [], orders: [] },
+    };
+    playersRef.current = initPlayers; setPlayers(initPlayers);
+    setMatchInfo({ matchId: 'offline', arenaId: arena.id, arenaLabel: arena.name, wsUrl: '', you: 'p1', numBars: bars.length });
+    setTempo({ R: 1, contested: false, myLevel: 'base' });
+    setView('match');
+    if (first) pushBarToChart(first);
+    setT(first?.time ?? 0);
+    addLog('info', `Offline practice: ${arena.name} (${bars.length} bars). Tempo controls drive a local timer.`);
+  }, [resetMatchState, pushBarToChart, addLog]);
+
+  const recomputeOfflinePlayers = useCallback((bar: Bar) => {
+    setPlayers((prev) => {
+      const base = prev.p1 ?? playersRef.current.p1;
+      if (!base) return prev;
+      const unreal = base.positions.reduce((acc, p) => {
+        const dir = p.side === 'long' ? 1 : -1;
+        return acc + (p.entry ? p.size * dir * (bar.close - p.entry) / p.entry : 0);
+      }, 0);
+      const equity = STARTING_CAPITAL + offlineRealizedRef.current + unreal;
+      const ip = Math.min(200, base.ip + 0.5);
+      const first = offlineBarsRef.current[0]?.close ?? bar.close;
+      const oppEquity = STARTING_CAPITAL + ((bar.close / first) - 1) * 100 * 0.6;
+      const next: Record<string, PlayerState> = {
+        p1: { ...base, ip, unrealized: unreal, equity, pnl: equity - STARTING_CAPITAL },
+        p2: { ...(prev.p2 ?? playersRef.current.p2), id: 'p2', equity: oppEquity, pnl: oppEquity - STARTING_CAPITAL, unrealized: 0, positions: [], orders: [], ip: 50, tb: 100 },
+      };
+      playersRef.current = next;
+      return next;
     });
-    addLog('order', `${ord.side} ${ord.size} @${price.toFixed(2)} (${ord.type}) [WS sent]`, t);
-    if (ctrl && currentBars[t]) { const isB = ord.side==='long'; ctrl.addPlayerMarker(t, isB, 'p1'); ctrl.addPriceLine(price*(isB?0.985:1.015), isB?'ENTRY':'SHORT', isB?'#22c55e':'#ef4444'); }
-    setIp(v => Math.min(120, v+1));
-  };
-  const handleSabo = (action: string, cost: number) => {
-    if (ip < cost) return; const t = ctrl?.currentIndex || 0; setIp(v => Math.max(0, v-cost)); addLog('sabo', `${action} (-${cost}IP)`, t);
-    // Send real sabo via ip_spend (keep UI)
-    sendWSAction('ip_spend', { cost, ability: action.includes('sl') ? 'delete_sl' : action.includes('news') ? 'fake_news' : 'widen', target_player: 'p2' });
-    if (ctrl && currentBars[t]) { ctrl.addSaboMarker(t, action.slice(0,8)); if (action.includes('sl')||action.includes('spread')) ctrl.addPriceLine((currentBars[t].close||100)*0.97, 'SABO', '#a855f7'); }
-    setTb(v => Math.max(0, v-3));
-  };
-  const handleMic = (on: boolean) => addLog('voice', on?'Mic on':'Mic off');
-  const handlePTT = (d: boolean) => { if (d) addLog('voice', 'PTT'); };
-  const handleIndex = (i: number) => setDisplayT(i);
-  const handleCtrl = (c: any) => { setCtrl(c); setCurrentR(c.speed || 1); /* c.updateFromServer available for real bars from deltas */ };
+  }, []);
 
-  React.useEffect(() => { if (!ctrl?.isPlaying) return; const id = setInterval(() => { setTb(v => Math.max(5, v - (currentR>1?1:0.4))); setIp(v => Math.min(120,v+0.1)); }, 1400); return () => clearInterval(id); }, [ctrl?.isPlaying, currentR]);
+  const endOffline = useCallback(() => {
+    const fin = playersRef.current;
+    const winner = resolveWinner(undefined, fin, 'p1');
+    setEndResult({ winner, players: fin, you: 'p1' });
+    setView('ended');
+  }, []);
+
+  // offline advance timer — only runs in offline mode while not paused (R>0)
+  useEffect(() => {
+    if (view !== 'match' || mode !== 'offline') return;
+    if (tempo.R <= 0) return; // PAUSE freezes the clock
+    const ms = Math.max(120, Math.floor(OFFLINE_BASE_MS / tempo.R));
+    const id = setInterval(() => {
+      const bars = offlineBarsRef.current;
+      const nextIdx = offlineIdxRef.current + 1;
+      if (nextIdx >= bars.length) { endOffline(); return; }
+      offlineIdxRef.current = nextIdx;
+      const bar = bars[nextIdx];
+      pushBarToChart(bar);
+      setT(bar.time);
+      recomputeOfflinePlayers(bar);
+    }, ms);
+    return () => clearInterval(id);
+  }, [view, mode, tempo.R, pushBarToChart, recomputeOfflinePlayers, endOffline]);
+
+  // ---- player actions ---------------------------------------------------
+  const handleTempo = useCallback((level: TempoLevel) => {
+    myLevelRef.current = level;
+    if (modeRef.current === 'server') {
+      sendWSAction('tb_influence', { level });
+      // optimistic: reflect own intent; server reconciles resolved R via deltas
+      setTempo((prev) => ({ ...prev, myLevel: level, R: prev.contested ? prev.R : levelToR(level) }));
+    } else {
+      setTempo({ R: levelToR(level), contested: false, myLevel: level });
+    }
+    addLog('tb', level === 'pause' ? 'Hold PAUSE (R=0)' : level === 'base' ? 'Release to 1×' : `Push ${level.toUpperCase()}`);
+  }, [sendWSAction, addLog]);
+
+  const opponentId = useCallback(() => {
+    const o = otherPlayer(playersRef.current, youRef.current);
+    return o?.id ?? (youRef.current === 'p1' ? 'p2' : 'p1');
+  }, []);
+
+  const handleOrder = useCallback((ord: { type: any; side: any; size: number; price?: number }) => {
+    const bar = currentBarRef.current;
+    const fillPrice = ord.price ?? bar?.close ?? 100;
+    if (modeRef.current === 'server') {
+      sendWSAction('submit_order', {
+        type: ord.type,
+        instr: 'X',
+        side: ord.side,
+        size: ord.size,
+        ...(ord.price != null ? { price: ord.price } : {}),
+      });
+    }
+    // optimistic local feedback (server reconciles on next delta/snapshot)
+    if (bar) ctrlRef.current?.addFillMarker(bar, ord.side, youRef.current, youRef.current, `${ord.side === 'long' ? 'BUY' : 'SELL'} ${ord.size}`);
+    if (ord.type === 'market' && bar) {
+      setPlayers((prev) => {
+        const me = prev[youRef.current];
+        if (!me) return prev;
+        const next = { ...prev, [youRef.current]: { ...me, positions: [...me.positions, { instr: 'X', side: ord.side, size: ord.size, entry: fillPrice }] } };
+        playersRef.current = next;
+        return next;
+      });
+    }
+    addLog('order', `${String(ord.side).toUpperCase()} ${ord.size} ${ord.type} @ ~${fillPrice.toFixed(2)}`);
+  }, [sendWSAction, addLog]);
+
+  const handleSabo = useCallback((a: Ability) => {
+    const target = a.ability === 'peek' ? youRef.current : opponentId();
+    if (modeRef.current === 'server') {
+      sendWSAction('ip_spend', { cost: a.cost, ability: a.ability, target_player: target });
+    }
+    // optimistic IP deduction; server is authoritative and reconciles
+    setPlayers((prev) => {
+      const me = prev[youRef.current];
+      if (!me) return prev;
+      const next = { ...prev, [youRef.current]: { ...me, ip: Math.max(0, me.ip - a.cost) } };
+      playersRef.current = next;
+      return next;
+    });
+    if (a.ability !== 'peek' && currentBarRef.current) ctrlRef.current?.addSaboMarker(currentBarRef.current, a.ability);
+    addLog(a.ability === 'peek' ? 'peek' : 'sabo', `${a.label} (-${a.cost} IP)`);
+  }, [sendWSAction, addLog, opponentId]);
+
+  // ---- navigation -------------------------------------------------------
+  const exitToLobby = useCallback(() => {
+    closeWs();
+    voice.stop();
+    setView('lobby');
+    setMatchInfo(null);
+    resetMatchState();
+  }, [closeWs, voice, resetMatchState]);
+
+  const rematch = useCallback(() => {
+    const arenaId = matchInfo?.arenaId;
+    const arena = arenas.find((a) => a.id === arenaId) ?? arenaForOffline(arenaId);
+    setView('lobby');
+    setEndResult(null);
+    // small delay so the chart unmounts cleanly before a fresh match
+    setTimeout(() => createMatch(arena), 50);
+  }, [matchInfo, arenas, arenaForOffline, createMatch]);
+
+  // ---- derived ----------------------------------------------------------
+  const me = players[you] ?? null;
+  const opp = otherPlayer(players, you);
+  const lastClose = currentBar?.close ?? 100;
 
   return (
     <div className="min-h-screen pvp-container">
       <header className="border-b border-[#2a313a] bg-[#0a0c10]/95 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3"><div className="font-semibold tracking-[-1px] text-lg">chart-fights</div><div className="text-[10px] px-2 py-0.5 rounded bg-[#ef4444]/10 text-[#ef4444]">MVP SKELETON</div></div>
-          <div className="flex items-center gap-4 text-xs text-[#9ca3af]">{matchState==='match' && selectedArena && <><span>{selectedArena.name}</span><button onClick={exitToLobby} className="underline">← LOBBY</button></>}<span className="hidden sm:inline">1v1 historical duels • TB/IP • sabo • voice</span></div>
+          <div className="flex items-center gap-3">
+            <div className="font-semibold tracking-[-1px] text-lg">chart-fights</div>
+            {mode === 'offline' && view !== 'lobby' && <div className="text-[10px] px-2 py-0.5 rounded bg-[#eab308]/10 text-[#eab308]">OFFLINE</div>}
+          </div>
+          <div className="flex items-center gap-4 text-xs text-[#9ca3af]">
+            {view !== 'lobby' && matchInfo && (
+              <>
+                <span className="hidden sm:inline">{matchInfo.arenaLabel}</span>
+                <span className="font-mono text-[10px] text-[#6b7280]">{matchInfo.matchId}</span>
+                <button onClick={exitToLobby} className="underline">← LOBBY</button>
+              </>
+            )}
+          </div>
         </div>
       </header>
+
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {matchState === 'lobby' && (
+        {view === 'lobby' && (
           <div className="space-y-8">
-            <div className="max-w-2xl"><h1 className="text-4xl font-semibold tracking-tighter">1v1 me in stocks bro.</h1><p className="mt-2 text-lg text-[#9ca3af]">Same normalized chart slice. Shared contested clock. Sabotage. Voice. 5 real minutes.</p></div>
-            <ArenaLobby arenas={(realArenas.length ? realArenas : SAMPLE_ARENAS) as any} onSelect={enterMatch} />
-            {loadingArenas && <div className="text-xs">Loading arenas from /arenas...</div>}
-            <div className="text-xs text-[#6b7280] max-w-prose">/arenas + /matches + native WS ws://.../ws/{matchId}. ReplayController series.update() + range from server deltas. TB/IP/sabo/tempo wired to WS sends. Per GDD+tasks(007,002). Config for Fly.</div>
+            <div className="max-w-2xl">
+              <h1 className="text-4xl font-semibold tracking-tighter">1v1 me in stocks bro.</h1>
+              <p className="mt-2 text-lg text-[#9ca3af]">Same normalized chart slice. Shared contested clock. Sabotage. Voice. 5 real minutes.</p>
+            </div>
+            <ArenaLobby arenas={arenas} onSelect={createMatch} selectedId={selectedArenaId} connecting={connecting} />
+            {loadingArenas && <div className="text-xs text-[#6b7280]">Loading arenas from {BACKEND_URL}/arenas…</div>}
+
+            <div className="panel p-4 max-w-md">
+              <div className="text-sm font-medium mb-1">Join an existing match</div>
+              <div className="text-xs text-[#9ca3af] mb-3">Open a match on another tab/browser, copy its match id, and join as the second player.</div>
+              <div className="flex gap-2">
+                <input
+                  value={joinId}
+                  onChange={(e) => setJoinId(e.target.value)}
+                  placeholder="match_id"
+                  className="flex-1 bg-[#0b0e14] border border-[#2a313a] px-2 py-1.5 rounded text-sm font-mono"
+                />
+                <select value={joinAs} onChange={(e) => setJoinAs(e.target.value as 'p1' | 'p2')} className="bg-[#0b0e14] border border-[#2a313a] px-2 py-1.5 rounded text-sm">
+                  <option value="p2">as p2</option>
+                  <option value="p1">as p1</option>
+                </select>
+                <button onClick={joinExisting} className="px-3 py-1.5 rounded bg-white text-black text-sm font-medium hover:bg-[#e5e7eb]">JOIN</button>
+              </div>
+            </div>
+
+            <div className="text-xs text-[#6b7280] max-w-prose">
+              Backend: {BACKEND_URL}. Uses GET /arenas + POST /matches + native WS. The chart reveals bars only as the server advances T (anti-cheat: no future preload). If the backend is unreachable, an offline practice match runs locally.
+            </div>
           </div>
         )}
-        {matchState === 'match' && selectedArena && (
+
+        {view === 'match' && matchInfo && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
             <div className="lg:col-span-8 space-y-3">
               <div className="match-header pb-2 flex items-center justify-between">
-                <div><div className="font-semibold">{selectedArena.name}</div><div className="text-xs text-[#9ca3af]">{selectedArena.ticker} • normalized • Sim Day {displayT}</div></div>
+                <div>
+                  <div className="font-semibold">{matchInfo.arenaLabel}</div>
+                  <div className="text-xs text-[#9ca3af]">normalized • Sim Day {Math.round(T)} • you are {you}</div>
+                </div>
                 <div className="flex items-center gap-1.5 text-sm">
-                  <button onClick={handlePause} className="px-3 py-1 rounded border border-[#2a313a] hover:bg-[#1a1f26]">⏸ PAUSE</button>
-                  <button onClick={handlePlay} className="px-3 py-1 rounded border border-[#2a313a] bg-white text-black font-medium hover:bg-[#e5e7eb]">▶ PLAY</button>
-                  {[1,2,3,5].map(s => <button key={s} onClick={() => handleSpeed(s)} className={`px-2 py-1 rounded border ${currentR===s ? 'border-[#ef4444] text-[#ef4444]' : 'border-[#2a313a] hover:bg-[#1a1f26]'}`}>{s}×</button>)}
-                  <button onClick={() => ctrl?.reset()} className="text-xs px-2 py-1 underline">RESET</button>
+                  <button onClick={() => handleTempo('pause')} className={`px-3 py-1 rounded border ${tempo.myLevel === 'pause' ? 'border-[#eab308] text-[#eab308]' : 'border-[#2a313a] hover:bg-[#1a1f26]'}`}>⏸ PAUSE</button>
+                  {(['base', 'ff2', 'ff3', 'ff5'] as TempoLevel[]).map((l) => (
+                    <button key={l} onClick={() => handleTempo(l)} className={`px-2 py-1 rounded border ${tempo.myLevel === l ? 'border-[#ef4444] text-[#ef4444]' : 'border-[#2a313a] hover:bg-[#1a1f26]'}`}>
+                      {l === 'base' ? '1×' : `×${levelToR(l)}`}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <ChartView bars={currentBars} onControllerReady={handleCtrl} externalMarkers={pendingMarkers} externalSabo={pendingSabo} onIndexChange={handleIndex} serverT={serverT} />
-              <div className="flex gap-2 text-[11px] text-[#9ca3af]"><div>Logical replay • update() streaming • markers + priceLines</div><div className="flex-1" /><div>T={displayT} • R={currentR}</div></div>
+              <ChartView onControllerReady={handleCtrl} R={tempo.R} contested={tempo.contested} T={T} paused={tempo.R <= 0} />
             </div>
+
             <div className="lg:col-span-4 space-y-3">
-              <ResourceBars tb={tb} ip={ip} currentR={currentR} onPause={() => handleTBAction()} onFF={(m)=>handleTBAction(m)} />
-              <SaboPanel ip={ip} onSabo={handleSabo} />
-              <OrderPanel onPlaceOrder={handleOrder} currentPrice={currentBars[displayT]?.close} />
-              <VoicePanel onToggleMic={handleMic} onPTT={handlePTT} />
+              <Scoreboard you={me} opp={opp} />
+              <ResourceBars tb={me?.tb ?? 100} ip={me?.ip ?? 0} R={tempo.R} contested={tempo.contested} myLevel={tempo.myLevel} onTempo={handleTempo} />
+              <OrderPanel onPlaceOrder={handleOrder} currentPrice={lastClose} />
+              <SaboPanel ip={me?.ip ?? 0} onCast={handleSabo} />
+              <VoicePanel status={voice.status} micOn={voice.micOn} remoteActive={voice.remoteActive} errorMsg={voice.errorMsg} onStart={voice.start} onStop={voice.stop} onToggleMic={voice.toggleMic} />
               <EventLog events={events} />
             </div>
-            <div className="lg:col-span-12 pt-2 text-[10px] text-[#6b7280] border-t border-[#2a313a]">Real WS connected (native) to backend. Deltas update TB/IP/T → ReplayController series.update + range. /arenas + /matches used. Mock equity. GDD flow.</div>
           </div>
         )}
+
+        {view === 'ended' && endResult && (
+          <EndScreen result={endResult} onRematch={rematch} onLobby={exitToLobby} />
+        )}
       </main>
-      <footer className="text-center text-[10px] py-6 text-[#6b7280] border-t border-[#2a313a]">chart-fights • WS to localhost:8000 or Fly via NEXT_PUBLIC_BACKEND_URL • GDD + task-007/002</footer>
+
+      <footer className="text-center text-[10px] py-6 text-[#6b7280] border-t border-[#2a313a]">
+        chart-fights • progressive server-revealed chart • TB/IP/sabotage/voice • GDD + task-007/002/003/004
+      </footer>
     </div>
   );
+}
+
+// Decide the winner by highest final equity (server `winner` wins if provided).
+function resolveWinner(serverWinner: string | undefined, players: Record<string, PlayerState>, _you: string): string | null {
+  if (serverWinner) return serverWinner;
+  const ids = Object.keys(players);
+  if (ids.length < 1) return null;
+  let best: string | null = null;
+  let bestEq = -Infinity;
+  let tie = false;
+  for (const id of ids) {
+    const eq = players[id].equity;
+    if (eq > bestEq) { bestEq = eq; best = id; tie = false; }
+    else if (eq === bestEq) { tie = true; }
+  }
+  return tie ? null : best;
 }
