@@ -136,3 +136,58 @@ Ready-to-paste design notes for task-002 + architecture-overview.md (clock/realt
 **Handoff Tie-in**: Extends task-002 ACs (determinism/contention tests) + arch §2/§4/§5 (realtime sync, sim engine, LW). Add determinism harness + lag/contention tests early (task-001/005). 2026 patterns (GGPO/Photon referee replays, Parquet arenas, LW logical + update for accelerated historical, FXR/ChartChamps validation) directly support variable-speed shared clock without external variance.
 
 (Full sub output integrated here for Cursor agent. Cross-ref STATUS for more excerpts. Update arch + STATUS when sub2 done.)
+
+## Deep Research Resolutions (sibling worker, 2026-06-26)
+
+This section resolves the **Tempo Bar / shared-clock open questions** from `roadmap-and-open-questions.md` (Tier 1 #2) and `game-mechanics-spec.md §1` ("Open"). All resolutions preserve the exact TB rates (base recharge +1.0/s, pause bonus +4.0/s, consumption Pause=0 / FFx2=2.0/s / FFx3=5.0/s / FFx5=12.0/s) and the contention rules (Pause→R=0 override; multi-FF R=max with all payers paying; default R=1.0). These are concrete starting points, tunable via playtest.
+
+### OQ-T1: Fractional `T` handling — continuous advance, discrete bar application
+**Resolution:** `T` is a continuous `Decimal` accumulator (`T += R * real_delta`, quantized to a fixed precision such as 1e-6 days). Bars are **applied only on integer crossings** of `T`. The sim is event-driven on integer boundaries, not on the fractional value:
+- Maintain `last_applied_day = floor(T)` before advance.
+- After `advance(real_delta)`, compute `new_day = floor(T)`. For each integer `d` in `(last_applied_day, new_day]`, **apply bar `d` in ascending order** (reveal bar, mark-to-market, evaluate order triggers, fire events). This guarantees that even a large FFx5 jump that crosses several integers in one tick applies every intermediate bar in sequence — no skipped bars, fully deterministic.
+- The fractional remainder of `T` is used **only** for smooth UI interpolation (chart logical range, clock animation) and is **never** used to fill orders. See OQ-T7 below.
+
+```python
+def advance(self, real_delta: Decimal) -> list[int]:
+    self._recompute_R()                      # contention first (Pause override / max FF)
+    self._apply_tb_recharge_and_consume(real_delta)
+    prev_day = int(self.T)                    # floor
+    self.T = (self.T + self.R * real_delta).quantize(Q_T)
+    new_day = min(int(self.T), self.last_bar_index)   # clamp to data length
+    return list(range(prev_day + 1, new_day + 1))     # bars to apply, in order
+```
+
+### OQ-T2: Simultaneous Pause + FF — Pause wins, deterministically, by rule (not by arrival time)
+**Resolution:** Per spec, **any active Pause forces R=0** regardless of how many FF influences are active. This is resolved by *state*, not by message arrival order, so it is inherently deterministic and race-free: every tick, `_recompute_R()` first checks "is at least one Pause influence currently active?" → if yes, `R=0`; else `R = max(active FF levels)`; else `R=1.0`.
+- **Cost accounting during a Pause that overrides FF:** the FF payer(s) keep paying their consumption only while they *hold* the FF input. Recommended rule (clearest for players + matches spec "all payers consume"): an FF influence that is being overridden by a Pause is **suspended (cost paused) while R is forced to 0**, because the FF is delivering no speed. Pause holders simultaneously receive the +4.0/s recharge bonus. This makes Pause a pure tempo-denial tool (cost 0, denies the opponent's FF value, and refills your own bar) exactly as the spec intends, and avoids the unfair outcome of an FF payer bleeding TB for zero benefit. Document this explicitly; alternative (keep charging overridden FF) is harsher and should only be used if playtests show pause-spam dominance.
+
+### OQ-T3: Multi-FF `R = max(R)` with all payers consuming
+**Resolution:** When two players both push FF (e.g. P1 FFx2, P2 FFx5), the shared `R = max = 5`, and **each payer consumes their own chosen tier's rate** (P1 pays 2.0/s, P2 pays 12.0/s) — *not* the max rate for everyone. Integrate cost continuously over `real_delta` per payer (`tb[p] -= rate[level_p] * real_delta`) to avoid drift under variable tick sizes. A player whose TB hits 0 has their influence auto-dropped that tick; `R` is then recomputed from remaining payers. Two players choosing the *same* tier both pay full rate (no split discount) — this keeps "fighting for speed" expensive and intentional (MOBA contested-objective parallel).
+
+### OQ-T4: Who-is-influencing visibility — show the aggregate state, anonymize the attribution (MVP)
+**Resolution:** Always broadcast the **resolved market state** to both players: `"Market Speed: 3.0x"` / `"PAUSED"` / `"1.0x"`, plus a boolean `contested` flag when ≥2 influences are active (e.g. `"3.0x (contested)"`). For MVP, **anonymize who is influencing** (do not label "opponent is pausing"). Rationale: hidden attribution preserves the bluff/mind-game layer (the opponent must read voice/chat tells to know if *you* are the one pausing, per GDD §15 "I'm holding pause — you're wasting IP"). Always show the player **their own** active influence and live TB drain unambiguously. (A post-MVP toggle could reveal attribution for a more "transparent" mode; keep the contested flag either way.)
+
+### OQ-T5: Client optimistic vs server-follow for own TB actions
+**Resolution:** **Server is authoritative for `R`, `T`, and all TB balances.** Hybrid prediction:
+- **Own TB drain & own influence state:** optimistic — the instant the player presses Pause/FFx2/3/5, the client locally starts draining its own TB bar and shows its own influence as active (hides input latency, feels responsive). Reconcile against the server `ResourceDelta` (snap own TB to server value when it arrives; small diffs lerp, large diffs hard-snap).
+- **Resolved `R` and `T` (shared/contested):** pure server-follow, **no client prediction**. The client never predicts the *outcome* of contention (it can't know the opponent's simultaneous inputs). It applies server `R`/`T` with conservative smoothing only. This matches the netcode-sub recommendation (authoritative referee à la Photon Quantum; optimistic local only for inputs you own).
+- This split is the safe default: you can over-predict your *intent* (cheap to correct) but never the *contested result* (would cause visible desync/rubber-banding of the whole market).
+
+### OQ-T6: "Market Speed" feedback (UX)
+**Resolution:** Persistent HUD element driven by `ResourceDelta {T, R, TB_self, contested}`:
+- Large speed readout: `1.0x` / `2.0x` / `3.0x` / `5.0x` / `PAUSED`, color-coded (neutral / accelerating / frozen).
+- TB bar with live drain animation while you hold an influence and recharge "sparkle" while idle/pausing; show your consumption rate inline (e.g. `-5.0/s`) and recharge rate (`+4.0/s` while pausing).
+- `contested` → subtle pulse/secondary marker so players feel the tug-of-war even without attribution.
+- On `R` change, fire a brief toast/sound ("Market accelerating ×3", "Market frozen") for the urgency/"alive chart" feel (GDD §14).
+
+### OQ-T7: Max `R` and partial-bar interpolation for orders
+**Resolution (max R):** Cap the *chooseable* FF tiers at the spec's set: **5 is the maximum `R`** (FFx5). Do not add higher tiers in MVP — FFx5 already drains a full TB in ~8s and is the high-risk burst ceiling. (Keep a single config constant `MAX_R = 5` so playtest can tune.)
+**Resolution (partial-bar interpolation):** **No intra-bar interpolation for order execution in MVP.** Orders are evaluated only at integer-`T` bar applications (see OQ-T1 and task-004's fill model). Fractional `T` advances the chart visually but does **not** create synthetic mid-bar prices that could trigger fills — doing so would (a) break determinism across variable `R`, and (b) let a player "scrub" a fill at a price that never existed in the normalized slice. The daily bar is the atomic execution unit. (Intraday/LTF bars are an explicit post-MVP fidelity upgrade, mirroring the "bar magnifier" pattern — see task-004 sources.)
+
+### Determinism note tying T to fills
+Because bars apply on integer crossings **in ascending order regardless of `R`**, the *sequence* of bars (and therefore the sequence of order triggers and P&L marks) is identical for any path of pause/FF inputs that ends at the same `T`. Only the *real-time pacing* differs. This is the property the replay/synctest harness asserts: `verify_replay(arena_id, sorted_action_log)` must reproduce the identical bar-application order and final equity hash. Quantize `T`, `R`, and all TB balances with `Decimal` to keep this bit-exact.
+
+**Sources (web, 2026):**
+- Intra-bar fill fidelity & "process every sub-step in order" rationale (bar magnifier): https://pynecore.org/docs/advanced/bar-magnifier/
+- Same-bar vs next-bar execution modes & exit-first ordering (engine design): https://github.com/ml4t/backtest
+- MOBA contested-objective / diminishing-return economy framing (informs "fighting over the clock" cost design): https://frequently-asking-questions.com/2026/04/04/the-5-minute-surrender-fallacy/

@@ -1,0 +1,12 @@
+OK static src/app/page.tsx
+OK static src/hooks/useReplayController.ts
+OK static src/components/ArenaLobby.tsx
+OK static src/components/ChartView.tsx
+OK static src/components/ResourceBars.tsx
+OK static src/components/SaboPanel.tsx
+OK page.tsx wires submit_order to sendWSAction
+initial index=0
+seekTo(4) index=4
+updateFromServer(6) index=6
+play isPlaying=true
+PASS controller state transitions

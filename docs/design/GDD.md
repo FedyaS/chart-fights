@@ -184,3 +184,128 @@ Verification note (2026-06-26 skeptic round): GDD phased list excised; full plan
 **Next Steps for this run (autonomous)**: Deepen GDD alignment (done). Create frontend streaming and voice Cursor tasks from architecture. Polish handoff artifacts. Use background subagents and scheduler to continue without idling. All outputs in docs/.
 
 This GDD is now the high-level entry point; see referenced specs for depth.
+
+---
+
+## 14. Detailed UI/UX Flow (Synthesized from LW Subs, task-007, Arch §5, Data/Netcode Subs + STATUS Cycles)
+
+**Pre-Match Lobby / Matchmaking Flow** (high-level from GDD §2 + task-007 lobby stub + arch match lifecycle):
+1. Player enters lobby (quickplay or private 1v1 code/room).
+2. Arena selection: Server picks (or player prefs) pre-loaded normalized slice (P[0]=100 for all instruments, generic labels like "Broad Equities"). Hash verify on client load (anti-cheat tie to task-001/006).
+3. Voice opt-in + mic permission prompt (graceful text fallback per task-008).
+4. Countdown (shared state sync via WS from task-005). Both preload via LW `series.setData(initialNormData)`.
+
+**Match Start & Core Screen Layout**:
+- Main area: Multi-instrument synced candlestick charts (TradingView LW Charts). Master/slave `timeScale.subscribeVisibleLogicalRangeChange` for shared T (logical range around current sim day index; no real dates during play).
+- Top/Left: Real-time clock ("Sim Day NNN" + R speed indicator), equity % for self + opponent (high-level or fog per design).
+- Resource HUD (persistent, animated):
+  - Tempo Bar (TB): Progress fill (color-coded by active influence: self/opponent/ neutral). Buttons/hotkeys: Pause (R=0), FF x2 / x3 / x5. Costs shown (e.g. "2.0/s"). Contested visuals: "Market Speed: 3.0x (contested)" + subtle who-is-paying if not anon.
+  - Intel Points (IP): Numeric + regen sparkles. Action bar: Buy feeds (unlocks), Peek (60 IP ultimate), Sabotage buttons (with costs/cooldowns/tooltips).
+- Center-right: Orders/Positions panel (market/limit/stop + attach SL/TP; size inputs; "place on chart" crosshair capture). Live list with modify/cancel.
+- Bottom: Notifications feed (timestamped toasts/banners: fills, "Your SLs deleted (sabotage)", fake news flags, news peeks).
+- Side panels: TextChat (persistent, emoji reactions to events) + VoicePanel (next to it per task-007/008 integration; mic/PTT/mute/volume per-player + WebAudio VAD speaking pulse indicator).
+- Bottom controls: Concede / pause own view (if allowed) / speed scrubber (client-only secondary analysis?).
+
+**In-Match Interaction Flow (contested, fast-paced)**:
+- Chart stream: WS deltas (task-005) → `series.update(bar)` for latest (never setData mid-stream per LW subs 019f0577/019f05bc). ReplayController (custom hook from LW sub): useEffect + R-scaled setInterval (baseMs / R); on tick `master.timeScale().setVisibleLogicalRange({from: T-w, to: T+o})` or direct from server T. On R=0 (pause): clear/freeze. FF: scale or direct set range. Overlays rebuilt on OrderDelta/EquityDelta/EventDelta: `createSeriesMarkers` / `setMarkers` for entries/exits (full replace); `createPriceLine` for SL/TP (applyOptions/remove); parallel equity series (Line/Area on same or secondary priceScale).
+- Order actions: UI input → WS action send (optimistic local marker/priceLine + tentative P&L). Server authoritative exec at T advance (reconcile on Equity/OrderDelta). Click chart for price snap.
+- Tempo influence: Button hold/press → WS "start_TB_influence(level)". Server resolves contention (Pause overrides to R=0; max(FF) + all payers consume per mech-spec). Client: visual drain on TB, R label update, freeze/scale controller.
+- IP spends: Button → cost check (client optimistic) → WS. On success: feeds unlock (add chart series), peek reveals headline in notifs/news; sabo applies server-side (e.g. delete SLs from opponent state) → EventDelta broadcast (victim-specific notif + subtle overlay effect like dim on affected priceLines?).
+- Voice sync: PTT or open mic → low-lat P2P (WebRTC via task-005 WS signaling for offer/answer/ICE). Indicators pulse on VAD. Text reactions (emoji) broadcast on WS + tied to game events (e.g. 💥 on sabo cast).
+- Reactivity: Fills/swing/sabo → notif toast + voice taunt opportunity + equity curve update. Shared clock creates urgency (can't passively watch; MOBA-like resource tension).
+
+**Post-Match Flow**:
+- End on real 5min wall time. Final equity comparison. Reveal (optional): full opponent feeds bought, exact sabo casts, arena real labels/dates.
+- Replay viewer: Full log replay or re-sim (from action log + arena ID). Scrub (direct logical range), speed controls, full visibility overlays (both players' markers). Stats: IP earned/spent, sabo usage, voice event count?, accuracy.
+- Rematch / share replay link / leaderboard update.
+
+**Key UX Principles (LW + arch + GDD)**: "Fast, tense, personal duel" feel. Contested visuals everywhere (TB influence, shared T sync, sabotage feedback). No heavy client prediction for shared state (server T/R truth + conservative lerp/smooth per netcode sub; optimistic own only). Strict React cleanup (chart.remove() + unsubs). Responsive desktop-primary. Accessibility: ARIA on resources, high-contrast toasts. Pitfalls avoided: update() only latest bars; master/slave loop guards; no extrapolation on ranges.
+
+**References**: task-007-frontend-streaming.md (ACs, LW panels, WS deltas); arch §5 (LW ReplayController + Mermaid, deltas: Bar/Resource/Order/Equity/Event, VoicePanel integration); LW subs (019f0577, 019f05bc-ed2b, 019f05db... official realtime + time-scale + markers/price-line + react/advanced excerpts); task-005 (WS); STATUS cycles (LW deep dives appended post sub; 15m reviews; 5m/10m self-checks integrating controller patterns); game-mechanics-spec §1-2 (T/R/TB exact); GDD §9 high-level.
+
+---
+
+## 15. Psych & Voice Warfare Section with Specific Examples (Synthesized from Voice Sub, FXR Research, Mech spec §9, LW/Arch feedback + STATUS Cycles)
+
+**Core Principle**: Voice + text is not just comms — it is the "all-chat MOBA salt" and primary psych differentiator (validated by FXR Battles: "Trading is more than charts, it’s mental warfare... Live voice chat to talk strategy or trash. Text chat for reactions, quick calls, and taunts." "Yes — live voice and text chat during active battles."). Combined with sabotage, TB contention, info asymmetry (peeks/feeds), and visible resource pressure, it creates poker-like tells, bluffing, tilt, and reactive mind games on top of pure chart skill. Low-lat (<150ms target) enables real-time reactions. Visual speaking indicators (WebAudio VAD) + event-tied toasts amplify immersion and psych pressure. Always notify victim of sabo for counterplay + bluff opportunities. Text polish (emoji reactions, timestamps) syncs with voice moments.
+
+**Specific Gameplay-Tied Examples** (drawn directly from voice sub research in STATUS + FXR validation + task-008 recs; pair with sabo/TB/peeks per GDD §8 and mech):
+- **On Sabotage Cast (Delete SLs, 30 IP / 60s cd)**: Server applies, victim toast: "Your stop losses were deleted (sabotage) at Sim Day XXX." Caster voice (while casting or immediate): "Nice SLs... or were they?" + VAD pulse on VoicePanel. Victim can counter-bluff immediately: "Didn't need them anyway — watch this long." Visual: priceLines for SLs vanish on victim chart; speaking indicator next to sabo notif. Mind game: caster might fake a cast sound or taunt without spending to tilt.
+- **During TB Contention / Pause Hold**: When holding Pause (R forced=0, own TB recharges +4/s): "I'm holding pause — you're wasting IP" (or "Scared of the next bar?"). Global UI: "Market Speed: PAUSED (contested)" + subtle influence indicator. Opponent voice reply: "Keep wasting yours, I'll FF when you crack." Psych: denies tempo during key setups; voice pressure makes opponent over-commit or tilt into bad FF spend.
+- **Expensive Peek (60 IP ult)**: After using on current T: "I just peeked the headline — gl hf on that Fed move." Or bluff without peeking. Victim hears and may overreact or second-guess their read. Text reaction: 👀 or 💰 emoji on the peek event in shared chat.
+- **Fake News Inject (40 IP / 90s cd) or Equity Swings**: "That wick look familiar? Or did I just feed you noise?" / "Oof, down 8% already? This is only the warm-up." On fill or big bar: "Nice entry... right into my TP." Ties to voice during volatile ranges sped up by FF.
+- **General Bluff / Denial / Tilt Induction**: "Your data feed jammed or just bad reads?" (after jam sabo). "I'm diversified — you still all-in on one index?" React to opponent's voice tells (e.g. hesitation on pause decision). "GG, but that pause was expensive." Post-swing: trash + "rematch?"
+- **Voice + Visual Synergy**: Speaking indicator pulses during sabo toasts or TB holds for "I did that" pressure. Quick text taunts (e.g. "😏") on event feed. PTT for precise timing (cast sabo then immediately taunt). Per-player volume/mute for toxicity control (opt-in, graceful degrade to text).
+
+**Implementation Ties & UX** (task-008 + arch §5 + voice sub 019f058c etc.): VoicePanel sidebar next to TextChat (Zustand + WS events for join + reactions). Signaling reuses task-005 match rooms (offer/answer/ICE). Native WebRTC P2P primary (STUN + Coturn TURN ~20-30% cases); <150ms Opus; indicators via Analyser/hark or built-in. Fallback seamless to provider (Twilio/Agora) or text + notify on mic deny/NAT fail. Graceful: "Voice unavailable (text only)". Pair explicitly with game events (sabo/TB/peeks) for psych power. Risks mitigated: PTT/mute/volume, no recording in MVP (opt-in later).
+
+**Research Backing**: FXR "mental warfare" + trash validated as huge fun/retention factor. MOBA BM (all-chat) + poker tells (voice pressure on resource decisions). LW overlays + notifs make sabo effects visible for voice reactions. Benefits: engagement, asymmetric info edge via bluff, pure fun ("1v1 me in stocks bro"). See voice sub excerpts (STATUS Process Log post 019f058c/019f05a9 etc.), task-008, GDD §8, mech §9.
+
+---
+
+## 16. Balance & Tuning Guidelines (from MOBA/FXR + Mech-spec, Data/Netcode Subs + STATUS Research)
+
+**Core Philosophy** (MOBA flavor on historical replay + FXR social validation): Make trading skill primary, but layer contested resources (TB/IP), direct interaction (sabo), info asymmetry (feeds/peeks), and voice psych as skill amplifiers and "fight" differentiators. Symmetric kits for both players. Short fixed real-time (5 min) + variable sim depth (150-1500+ days) keeps snappy. Normalization (P[0]=100 + generic) + server-auth (task-005/001) ensures fairness. Good trades fund psych warfare (IP from +10% realized P&L). Comebacks enabled by late sabo/tempo swings + volatility in normalized data.
+
+**TB (Tempo) Tuning (Mech-spec §2 exact starting numbers; MOBA "contested objective" parallel)**:
+- Like fighting over dragon/baron or map control: Shared R creates direct "who controls the pace" fights.
+- Recharge: +1.0 / real-s base (full bar ~100s). Pause bonus +4.0/s (when holding, R≤0) — strong denial + personal regen incentive.
+- Consumption (per real-s active): Pause=0 (pure denial), FFx2 (R=2)=2.0/s, FFx3=5.0/s, FFx5 (R=5)=12.0/s (full bar in ~8s — high-risk burst only).
+- Contention: Pause always forces R=0 override. Multiple FF: R=max(active), all payers consume. Default R=1.0 no controls.
+- Guidelines: Tune so pause is strategic denial not stalling (test 5min real feel; avoid infinite hold via costs or soft timers). FF high multipliers for rush boring ranges but punish over-use (opportunity cost for later IP/sabo). Visual "who influencing" or anon for psych bluff. Playtest: measure % time paused vs FF, comeback frequency. Netcode sub: server truth for R resolution + conservative client follow.
+- FXR parallel: Time compression is core; add resource gate + contention for interaction (vs pure solo scrub in analogs).
+
+**IP (Intel) Economy (MOBA "gold" from performance + vision/sabo spend)**:
+- Sources: Passive +0.5 / real-s; +10% of realized P&L on profitable closes (rewards good trading to "buy power").
+- Uses: Premium feeds (~20-40 IP one-time, vision asymmetry); Peek ult 60 IP (limited uses/cooldown); Sabo 25-40 IP + cooldowns (45-90s real after cast).
+- Sabo specifics (mech §7): Delete SLs (30 IP/60s), Widen Spreads (25 IP/45s cd, 15s effect, 0.4-0.8% adverse slip), Fake News (40 IP/90s). High cost relative to regen (~50-80s passive for one cast) forces trade-off.
+- Guidelines: IP soft cap ~200; no negative. Earnings from unrealized? Playtest. Sabo always notify victim (timestamped) for counter + psych (no stealth). Cooldowns + costs prevent spam; risk of backfire (visible tilt opponent aggressive). Balance sabo power vs pure execution: high cost + detection + victim counterplay (e.g. wider stops after detected). Feeds give edge but meta may favor raw price + timing.
+- MOBA: IP = farm for items/abilities. Good "CS" (trades) funds "ganks" (sabo). Snowball via IP lead but comeback via tempo/voice tilt.
+- FXR: Voice amplifies without extra resource cost (free psych layer on top of execution).
+
+**General Tuning Principles (from research/specs)**:
+- Symmetric + high visibility feedback for fairness and mind games.
+- Risk/reward: Expensive actions (FFx5, peek, high sabo) have big impact but drain or cooldown.
+- Comeback & swing: Short duration + volatile % moves + late-game sabo allow huge equity swings.
+- Test process (STATUS netcode/mech/data cycles): Deterministic sim harness (Decimal for P&L/TB; verify_replay(arena+log)); lag-inject for TB contention races; playtest multiple arenas (trending/crisis/range from data sub curation); measure winrate by sabo usage, IP efficiency, voice activity correlation (future), equity curves.
+- Avoid: Over-sabo (make trading irrelevant); stall (tune pause regen/override); frustration (clear contested UI, graceful reconnect per netcode).
+- MOBA/FXR steal: Contested resources create "fights" on shared objective (TB clock like objective); voice as mental warfare multiplier (FXR "rush without risk"); fairness via same historical segment (ChartChamps/FXR).
+- Future: Burst lump-sum actions? Recurring IP costs? "Purge" counters? Tune post MVP via metrics.
+
+**Numbers Baseline (exact from game-mechanics-spec; tunable via playtest)**: See §2 TB/IP, §7 sabo costs/cds/durs, §6 peek. Match 300 real-s fixed. Starting capital 100 units. Small base spread 0.05-0.1%.
+
+---
+
+## 17. Open Items / Polish (Consolidated from Roadmap, Mech §12, HANDOFF, STATUS Cycles & Tasks 001-008 + Prior Subs)
+
+**Tier 1 (Critical for Phases 0-2 / tasks 001/002/005/006/003; resolve before full playable)**:
+- Clock/TB contention edges: Fractional T? Exact simultaneous Pause+FF race resolution (server receive time + max)? Client prediction (netcode sub rec: pure follow + lerp for shared T/R/TB; optimistic only for own orders/TB drain). Reconnect mid-contention (full snapshot + missed deltas + active influencers).
+- Determinism harness & verification (anti-cheat/netcode sub): Synctest (multi-engine same actions + checksum), lag injection on TB fights (Pause/FF races), stable Decimal state hashes (equity/P&L/TB quantize), verify_replay(arena_id + sorted action log). Integrate task-001/005. See anti-cheat-determinism-design-notes.md + STATUS det subs.
+- IP economy details: Unrealized P&L grants? Negative allowed? Burst actions? Exact P&L-to-IP conversion curve.
+- Sabotage: Granularity (specific instruments?); counters ("purge" ability?); victim visibility depth; probabilistic detection? Backfire mechanics.
+- Arena/data: Selection (random balanced vs curated regimes vs MMR); exact prep (OHLC full vs returns + on-demand; non-trading interp); mystery offsets + content_hash (data sub 006 + task-001).
+- Order fidelity: Close-only vs high/low triggers within bar? Limit fill priority on simultaneous?
+
+**Tier 2 (Phase 3-4, tasks 007/008/004)**:
+- Voice: Self-hosted Coturn vs provider priority (Twilio/Agora); NAT/cross-net test plan; post-match voice log opt-in (deferred); exact audio constraints + VAD lib.
+- UI polish (LW sub + task-007): Full sabo visual effects (dim/glitch on victim overlays); contested TB "who influencing" (or always anon for psych); equity separate pane; current-T vertical line plugin; lobby full vs stub; mobile/responsive.
+- Replays: Log format (action + R-ts + arena); full vs partial visibility post-match; scrubber fidelity with R scaling.
+- Client state: How much fog on opponent (equity delta only vs full?); personal scrub secondary view cost?
+
+**Polish & UX Items (from arch §5, GDD, HANDOFF, STATUS verifs)**:
+- Contested feedback everywhere: Strong visuals/audibles for TB influence, R changes, sabo notifs, IP spends (tooltips + animations). "Fast tense duel" feel.
+- LW integration polish: Master/slave guards explicit; React strict cleanup; no setData live (only init); handle WS lag gracefully.
+- Psych enhancements: Timed voice prompts or emotes on key events; emoji reactions tied to fills/sabo/TB; speaking indicators pulse on sabo toasts.
+- Anti-toxicity: Easy mute/PTT/volume; report; volume defaults reasonable.
+- Performance: Broadcast ~10-20Hz or event-driven; throttle renders; virtual lists.
+- Accessibility & clarity: Clear resource cost previews; speed indicators; generic labels consistent.
+- Testing: Full determinism cross-client + lag sim; NAT matrix for voice; multiple arena playtests (data sub regimes).
+
+**References to Prior STATUS Cycles & Tasks**:
+- All synthesized from: Mech subs (tasks 002-time-and-tempo, 003-resources-and-sabotage, 004-orders-and-core-loop + game-mechanics-spec authoritative rules); Data sub (task-006 + research/ Parquet/arenas/yf/Stooq); Netcode/realtime (task-005 + arch + anti-cheat-notes GGPO/Photon patterns); Voice sub (task-008 + 019f058c WebRTC/psych/FXR + task-007 integration); LW subs (task-007 + 019f0577/019f05bc/019f05db controller, official tutorials, deltas, pitfalls); Own work (RESEARCH_STATUS.md Process Log: 5m/10m/15m self-checks, sub polls/integrations e.g. post 019f05xx voice/LW/det, verif "All hold 8/8 + N refs + 0 legacy", handoff polish sub 019f05f4, multiple cycles appending excerpts + deepens to arch/GDD/tasks).
+- See: docs/cursor-tasks/TASK_MANIFEST.md (canonical 8); roadmap-and-open-questions.md (phases + OQs); HANDOFF_READINESS_POLISH_RECS.md + IMPLEMENTATION_HANDOFF.md (verif summaries); game-mechanics-spec §12 opens; arch §7 risks; STATUS cycles for full transcripts/FXR quotes/excerpts + sub IDs.
+- MVP defaults (per roadmap): In-mem single-proc; wall-time align; text-first+WebRTC; bar-at-T + units 100; exact TB/IP/sabo from spec; server truth.
+
+**Next for Polish**: Playtest-driven tuning of all numbers; deepen specific UI mocks for contested states; full voice psych UX tests; update GDD/mech after first impl cycle. All research/design artifacts remain in docs/.
+
+This completes the deepened design package. Ready for Cursor agents per TASK_MANIFEST + full handoff.

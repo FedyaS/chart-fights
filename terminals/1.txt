@@ -1,0 +1,27 @@
+---
+pid: 48344
+cwd: "C:\Users\fedse\Documents\Github\chart-fights"
+command: "$env:SCRATCH_DIR='C:\\Users\\fedse\\AppData\\Local\\Temp\\grok-goal-fd94c9f2e9b4\\implementer'; Set-Location C:\\Users\\fedse\\Documents\\Github\\chart-fights\\frontend; node scripts/verify-controller.cjs > \"$env:SCRATCH_DIR\\frontend-verify.log\" 2>&1; node scripts/verify-controller.cjs >> \"$env:SCRATCH_DIR\\frontend-verify.log\" 2>&1; Get-Content \"$env:SCRATCH_DIR\\frontend-verify.log\" -Tail 20"
+started_at: 2026-06-26T23:14:28.868Z
+running_for_ms: 4940003  
+---
+OK static src/components/ResourceBars.tsx
+OK static src/components/SaboPanel.tsx
+initial index=0
+seekTo(4) index=4
+updateFromServer(6) index=6
+play isPlaying=true
+PASS controller state transitions
+wrote C:\Users\fedse\AppData\Local\Temp\grok-goal-fd94c9f2e9b4\implementer\frontend-controller.log
+OK static src/app/page.tsx
+OK static src/hooks/useReplayController.ts
+OK static src/components/ArenaLobby.tsx
+OK static src/components/ChartView.tsx
+OK static src/components/ResourceBars.tsx
+OK static src/components/SaboPanel.tsx
+initial index=0
+seekTo(4) index=4
+updateFromServer(6) index=6
+play isPlaying=true
+PASS controller state transitions
+wrote C:\Users\fedse\AppData\Local\Temp\grok-goal-fd94c9f2e9b4\implementer\frontend-controller.log

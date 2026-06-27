@@ -63,3 +63,321 @@ High readiness. See arch voice section + STATUS for more excerpts/psych ties. Fo
 Key for task-008: Signaling over 005 WS rooms (offer/answer/ICE), P2P WebRTC (getUserMedia, RTCPeerConnection), <150ms (Opus), STUN+ TURN (Coturn), graceful fallback, mic perms handling, WebAudio speaking indicators, NAT mitigations (test cross-net), FXR psych: "mental warfare... trash talk... taunts" + exs tied to sabo ("Nice SLs...?"), TB ("holding pause"), peeks. UI: VoicePanel next to TextChat (task-007), Zustand + WS, emoji reactions to events. Recs: 1. signaling skeleton, 2. native P2P, 3. controls/indicators, 4. fallback, 5. text polish/perms, 6. tests. Sources: MDN, FXR, project specs. High readiness.
 
 **Fresh sub 019f05bc-ed2b-2084 (WebRTC deep ~90s)**: FXR tie perfect: "live voice chat to talk strategy or trash... taunts" — "mental warfare" validated; low-latency enables reactive psych. Setup: HTTPS; getUserMedia({audio: {echoCancellation:true,...}}); RTCPeerConnection({iceServers: [stun..., {urls: turn coturn, username ephemeral, credential}] }); pc.addTrack; createOffer/Answer + setLocal/Remote; trickle ICE via WS. WS reuse task-005 room: forward offer/answer/ice JSON. getStats for adapt. Opus default low BW 20-64kbps. TURN ~20-30% cases (symmetric NAT/CGNAT/firewall UDP block); prioritize UDP; regional Coturn for RTT<150. Fallback: Daily.co / Twilio / Agora (cheap audio). VAD: @ricky0123/vad or WebRTC built-in for pulsing indicators. PTT: track.enabled=false on hold. Recs: native + Coturn primary (ephemeral creds server-gen); signaling first (extend 005); permission context (battle start "for trash talk"); VAD + volume + mute UI next to chat; reconnect on state failed; tests on real NATs. Pseudocode full in sub output. <150ms feasible direct (Opus~20-50). 1v1 ideal P2P. Integrate UI patterns (Discord HUD sidebar). High readiness + psych power.
+
+---
+
+## Deep Research Resolutions (sibling worker, 2026-06-26)
+
+This section **extends** the WebRTC/psych notes above with concrete, MVP-scoped resolutions grounded
+in **current (2026) WebRTC guidance**: the MDN *perfect negotiation* pattern, Coturn TURN-REST
+ephemeral credentials, Opus latency math, real-world TURN-relay prevalence, and `@ricky0123/vad-web`.
+Stays consistent with the architecture: **signaling reuses the task-005 match WS**, **text-first then
+P2P WebRTC**, **1v1 P2P audio**, **graceful fallback**.
+
+### Q1. Self-hosted Coturn (STUN/TURN) vs provider (Twilio/Agora/Daily) — recommendation + tradeoffs
+
+**Resolution (MVP): STUN from a public/own server + a *managed TURN provider* behind a thin
+`/ice-servers` abstraction; document Coturn self-host as the scale-time cost optimization.**
+
+Rationale: TURN is the one piece that *must just work* (15–30% of sessions depend on it — Q2) and
+running Coturn correctly (UDP/TCP/TLS ports, public IP, regional placement, cert rotation, abuse
+control) is real ops work that is wasteful for a Phase-4 MVP. A managed TURN service
+(Cloudflare TURN / Twilio Network Traversal / Metered) gives reliable, geo-distributed relays in
+minutes. **Crucially, abstract the ICE config behind one endpoint** so swapping managed → Coturn is
+a server-only change with **zero client edits**.
+
+| Option | Pros | Cons | Use when |
+|---|---|---|---|
+| **Managed TURN** (Cloudflare/Twilio/Metered) | Reliable, global, pay-per-GB, no ops, ephemeral creds built-in | Per-GB cost at scale, vendor dep | **MVP / launch** |
+| **Self-host Coturn** | Cheap at volume, full control, regional placement near players | Ops burden, monitoring, cert/secret rotation | **Scale** (when relay GB cost > VPS) |
+| **Full media provider** (Agora/Daily/LiveKit SFU) | Turnkey audio, recording, noise suppress | Overkill + cost for 1v1 P2P; SFU not needed for 2 peers | Only if P2P proves unreliable broadly |
+
+**Ephemeral credentials (same pattern for both managed and Coturn):** never ship a static TURN
+password. Coturn's TURN-REST uses time-limited creds — `username = "<expiryUnix>:<userId>"`,
+`password = base64(HMAC-SHA1(secret, username))` — validated by the server by re-computing the HMAC
+(no DB lookup). Lifetime ~ match length + margin (e.g. 1 h). ([Coturn TURN-REST][turn-rest], [Coturn wiki][turn-wiki])
+
+```python
+# task-005 backend: GET /ice-servers  -> returns iceServers for the client (per match join)
+import time, hmac, hashlib, base64
+def ice_servers(user_id: str, ttl=3600, secret=TURN_SHARED_SECRET):
+    expiry = int(time.time()) + ttl
+    username = f"{expiry}:{user_id}"
+    password = base64.b64encode(hmac.new(secret.encode(), username.encode(), hashlib.sha1).digest()).decode()
+    return {"iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["turn:turn.chart-fights.example:3478?transport=udp",
+                   "turn:turn.chart-fights.example:3478?transport=tcp",
+                   "turns:turn.chart-fights.example:5349?transport=tcp"],   # TLS for restrictive firewalls
+         "username": username, "credential": password},
+    ]}
+```
+
+```conf
+# coturn turnserver.conf (scale-time): static secret + REST API
+use-auth-secret
+static-auth-secret=<TURN_SHARED_SECRET>
+realm=chart-fights.example
+listening-port=3478
+tls-listening-port=5349
+min-port=49152
+max-port=65535
+fingerprint
+no-cli
+```
+
+### Q2. What % of connections need TURN relay? Symmetric NAT / CGNAT handling
+
+**Resolution: budget ~15–25% relay for our (desktop, home-Wi-Fi-heavy) audience; treat TURN as
+mandatory, not optional.** Published 2026 data:
+
+- **General/consumer:** ~15–30% need a relay; Chrome UMA ≈ **20–25%** of sessions use relay candidates. ([getstream STUN/TURN][gs-stunturn], [dev.to NAT][nat-dev])
+- **Mobile / CGNAT:** ~25–35%. **Enterprise/corporate firewalls:** ~30–60% (some report up to ~85%). ([celloip TURN guide 2026][cello-turn], [liveapi NAT][liveapi-nat])
+- **Cause:** **symmetric NAT** (endpoint-dependent port mapping) — common on mobile carriers (CGNAT)
+  and corporate routers — defeats STUN hole-punching; **two symmetric NATs ⇒ relay is the only path**. ([dev.to NAT][nat-dev], [celloip][cello-turn])
+
+Handling:
+- Always provide both STUN **and** TURN; include `transport=tcp` and `turns:` (TLS/443-style) so
+  firewalls that block UDP still connect.
+- Don't force relay for everyone (wastes bandwidth); let ICE pick the best pair. Only force
+  `iceTransportPolicy:'relay'` as a diagnostic.
+- Place TURN **regionally** to keep relayed RTT within the <150 ms budget (Q3).
+- Symmetric-NAT detection is implicit: if the only working candidate pair is `relay`, you're behind
+  a hard NAT — surface a subtle "relayed" badge but otherwise proceed.
+
+### Q3. Latency budget (<150 ms) with Opus; getStats monitoring + fallback triggers
+
+**Resolution: <150 ms one-way is comfortably achievable on a good direct P2P path; the dominant,
+least-controllable term is the network leg.** Opus end-to-end budget (one-way):
+
+| Stage | Typical | Note |
+|---|---|---|
+| Capture + WebRTC APM (AEC/NS/AGC) | ~10–20 ms | buffering + cleanup |
+| Opus encode (20 ms frame) | ~20 ms | 26.5 ms algorithmic delay at libopus defaults |
+| Packetize/send | ~1 ms | RTP+SRTP |
+| **Network (one way)** | **~10–150 ms** | **dominant**; keep TURN regional |
+| Jitter buffer (NetEQ) | ~20–100 ms | adaptive |
+| Decode + render | ~10–30 ms | output device buffer |
+| **Total (good net)** | **~70–120 ms** | below target |
+
+([Opus codec][opus-fora], [WebRTC audio pipeline][fora-pipeline], [Opus wiki][opus-wiki])
+
+**Opus tuning for a 1v1 trash-talk game:**
+- `useinbandfec=1` (recover isolated packet loss without retransmit) — keep ON.
+- **`usedtx=1` (DTX ON)** is fine here (saves bandwidth during silence; the STT-specific reason to
+  disable it does not apply to human-to-human voice). ([RFC 7587][rfc7587], [Opus tuning 2026][callsphere])
+- 20 ms frame (browser default) — good latency/efficiency trade-off.
+- Voice bitrate ~24–32 kbps via `RTCRtpSender.setParameters` (cheap, plenty for speech).
+
+```ts
+// constrain capture for low-latency voice
+const stream = await navigator.mediaDevices.getUserMedia({
+  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 },
+});
+// cap bitrate without SDP munging
+const sender = pc.addTrack(stream.getAudioTracks()[0], stream);
+const p = sender.getParameters(); p.encodings = [{ maxBitrate: 32_000 }]; await sender.setParameters(p);
+// optionally SDP-munge useinbandfec=1; usedtx=1 in the a=fmtp:111 line if you need to force it
+```
+
+**getStats monitoring + fallback triggers** (poll every ~2–3 s):
+
+```ts
+async function sampleStats(pc: RTCPeerConnection) {
+  const stats = await pc.getStats();
+  let rttMs = 0, lossFrac = 0, jitterMs = 0;
+  stats.forEach(r => {
+    if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.nominated)
+      rttMs = (r.currentRoundTripTime ?? 0) * 1000;
+    if (r.type === 'inbound-rtp' && r.kind === 'audio') {
+      jitterMs = (r.jitter ?? 0) * 1000;
+      lossFrac = r.packetsReceived ? (r.packetsLost ?? 0) / (r.packetsLost + r.packetsReceived) : 0;
+    }
+  });
+  return { rttMs, lossFrac, jitterMs };
+}
+// Fallback / degrade triggers:
+//   - pc.connectionState === 'failed'                      -> restartIce(); then provider/text fallback
+//   - no 'connected' within ~8 s of negotiation start      -> fallback
+//   - sustained rttMs > 300 or lossFrac > 0.10 over ~10 s   -> warn "poor connection", consider relay/provider
+//   - 'disconnected' for > ~5 s                             -> restartIce()
+pc.oniceconnectionstatechange = () => { if (pc.iceConnectionState === 'failed') pc.restartIce(); };
+```
+
+### Q4. Perfect negotiation (polite/impolite) + trickle ICE over the match WS
+
+**Resolution: implement the MDN perfect-negotiation pattern verbatim; the task-005 server is a dumb
+forwarder that also assigns the polite role.** Server picks one peer polite (e.g. first joiner, or
+lower `playerId`) and tells each client its flag on join. Signaling messages ride the existing
+`/ws/{match_id}` room; the room forwards `{type:'description'|'candidate'}` to the *other* peer.
+([MDN perfect negotiation][mdn-pn], [WebRTC.rs deep dive][rs-pn], [signaling server][signal-med])
+
+```ts
+let makingOffer = false, ignoreOffer = false, polite = serverAssignedPoliteFlag;
+
+pc.onnegotiationneeded = async () => {
+  try { makingOffer = true; await pc.setLocalDescription();
+        ws.send(JSON.stringify({ type: 'description', description: pc.localDescription })); }
+  finally { makingOffer = false; }
+};
+pc.onicecandidate = ({ candidate }) =>            // trickle ICE: forward each candidate as discovered
+  candidate && ws.send(JSON.stringify({ type: 'candidate', candidate }));
+pc.ontrack = ({ streams }) => { remoteAudioEl.srcObject = streams[0]; };
+
+ws.onmessage = async ({ data }) => {
+  const msg = JSON.parse(data);
+  if (msg.type === 'description') {
+    const d = msg.description;
+    const offerCollision = d.type === 'offer' && (makingOffer || pc.signalingState !== 'stable');
+    ignoreOffer = !polite && offerCollision;       // impolite ignores colliding offers
+    if (ignoreOffer) return;
+    await pc.setRemoteDescription(d);              // polite rolls back implicitly (impl. rollback)
+    if (d.type === 'offer') { await pc.setLocalDescription();
+      ws.send(JSON.stringify({ type: 'description', description: pc.localDescription })); }
+  } else if (msg.type === 'candidate') {
+    try { await pc.addIceCandidate(msg.candidate); }
+    catch (e) { if (!ignoreOffer) throw e; }       // swallow candidate errors for ignored offers
+  }
+};
+```
+
+Server side (task-005 reuse — *do not parse SDP/ICE, just relay*):
+
+```python
+# on join: assign roles, nudge first peer once the second arrives
+async def on_join(room, ws, player_id):
+    room.add(ws)
+    polite = (player_id == sorted(room.player_ids)[0])      # deterministic, stable
+    await ws.send_json({"type": "role", "polite": polite})
+    if len(room) == 2:                                       # 'ready' nudge so neither offers into empty room
+        await room.broadcast({"type": "ready"})
+async def on_signal(room, sender_ws, msg):                  # msg.type in {description, candidate}
+    await room.broadcast(msg, exclude=sender_ws)            # dumb forward to the other peer
+```
+
+Don't add tracks / start offering until the **other peer is present** (`ready` nudge) so you never
+offer into an empty room; grab the mic before wiring the socket so the only `await` happens first.
+
+### Q5. Mic permission denial UX + device errors
+
+**Resolution: prompt with *context* and degrade gracefully to text — never block the match.**
+- Prompt at match start, opt-in, with a reason ("Enable mic for live trash talk?"). Voice is
+  additive; text chat always works.
+- Map `getUserMedia` errors:
+  - `NotAllowedError` / `SecurityError` → user denied → `voiceState='denied'`, show
+    **"Voice unavailable (text only)"** + a "Enable mic" retry button (re-prompts).
+  - `NotFoundError` → no mic device → "No microphone found".
+  - `NotReadableError` → device busy (another app) → "Mic in use by another app".
+- Requires **HTTPS** (secure context) for `getUserMedia`.
+
+```ts
+async function enableVoice() {
+  try { return await navigator.mediaDevices.getUserMedia({ audio: {/* constraints */} }); }
+  catch (e) {
+    const n = (e as DOMException).name;
+    store.setVoiceState(n === 'NotAllowedError' ? 'denied'
+      : n === 'NotFoundError' ? 'no-device' : n === 'NotReadableError' ? 'busy' : 'error');
+    store.pushNotification({ kind: 'voice', text: 'Voice unavailable — text chat only.' });
+    return null;                                  // seamless: text chat already live over WS
+  }
+}
+```
+
+### Q6. PTT / mute / per-player volume
+
+**Resolution: PTT and mute toggle `track.enabled`; per-player volume is per-`<audio>` element
+`.volume` (or a `GainNode`).**
+
+```ts
+// Push-to-talk: hold Space to transmit (default muted when not held)
+localTrack.enabled = false;
+addEventListener('keydown', e => { if (e.code === 'Space' && !pttHeld) { pttHeld = true; localTrack.enabled = true; }});
+addEventListener('keyup',   e => { if (e.code === 'Space') { pttHeld = false; localTrack.enabled = false; }});
+// Mute toggle (open-mic mode):
+function toggleMute() { localTrack.enabled = !localTrack.enabled; }
+// Per-opponent volume slider (0..1) — playback only, no renegotiation:
+remoteAudioEl.volume = sliderValue;
+```
+
+`track.enabled = false` stops transmitting audio frames (sends silence/DTX) without renegotiating —
+ideal for instant PTT/mute. Offer a clear visual mic state in the VoicePanel.
+
+### Q7. VAD speaking indicators (@ricky0123/vad-web)
+
+**Resolution: detect *local* speech with `@ricky0123/vad-web` (Silero v5 via ONNX-wasm), and drive
+the *opponent's* indicator by broadcasting tiny speaking start/stop events over the WS** (decouples
+the remote pulse from audio analysis; works even when relayed).
+
+- `@ricky0123/vad-web` v0.0.30 (Nov 2025), ~142k weekly downloads; React hook `useMicVAD` lives in
+  `@ricky0123/vad-react`. Loads worklet + ONNX + wasm assets — **self-host these** via `baseAssetPath`
+  / `onnxWASMBasePath` to avoid CDN coupling. ([vad-web npm][vad-npm], [vad docs][vad-docs])
+
+```tsx
+import { useMicVAD } from '@ricky0123/vad-react';
+function useSpeakingIndicator(ws: WebSocket) {
+  const [selfSpeaking, setSelf] = useState(false);
+  useMicVAD({
+    baseAssetPath: '/vad/', onnxWASMBasePath: '/vad/',     // self-hosted assets
+    onSpeechStart: () => { setSelf(true);  ws.send(JSON.stringify({ type: 'speaking', on: true })); },
+    onSpeechEnd:   () => { setSelf(false); ws.send(JSON.stringify({ type: 'speaking', on: false })); },
+  });
+  return selfSpeaking;   // pulse own avatar; opponent's pulse driven by their 'speaking' WS events
+}
+```
+
+Alternative remote-only path (no extra lib): read `audioLevel` from inbound-rtp `getStats`, or a Web
+Audio `AnalyserNode` on the remote stream. The WS-event approach is cheaper and the recommended MVP.
+
+### Q8. Recording opt-in (deferred)
+
+**Out of MVP scope (Phase 4+).** When added: `MediaRecorder` on a mixed/own track, **two-party
+explicit consent**, clear recording indicator, and storage/retention policy. Note legal two-party
+consent concerns. Do not build for MVP.
+
+### Q9. Psych UX — tie voice/text to game events + VoicePanel placement
+
+**Resolution: VoicePanel sits directly beside the TextChat in the match HUD sidebar; game events
+(from `EventDelta`) drive emote suggestions, indicator emphasis, and quick-taunt buttons.** Voice is
+the "all-chat MOBA salt" + poker-tell layer (FXR "mental warfare"). Always-notify-victim sabotage
+(mech-spec §7) is what creates the bluff/counter-bluff window.
+
+| Game event (EventDelta) | Voice/Text hook | Example taunt (quick-button) |
+|---|---|---|
+| Delete SLs cast (30 IP) | victim toast + caster VAD pulse | "Nice SLs… or were they?" |
+| Holding Pause (R=0, +4 TB/s) | global "PAUSED (contested)" + pulse | "Holding pause — you're wasting IP." |
+| Expensive Peek (60 IP) | 👀 reaction on peek event | "Just peeked the headline — gl on that." |
+| Inject Fake News (40 IP) | "misinformation?" flag | "That wick look familiar?" |
+| Big fill / equity swing | equity-curve flash + emote | "Right into my TP." |
+
+Implementation: VoicePanel (mic/PTT/mute toggle, per-player volume, self+opponent speaking pulses)
++ TextChat (timestamps, emoji quick-reactions, auto-scroll-to-latest) share a sidebar; both read the
+same Zustand store and the same WS room. Emoji reactions broadcast over WS and can be **auto-suggested
+on key events** (e.g. 💥 when a sabotage `EventDelta` arrives). Anti-toxicity: easy mute, per-player
+volume, PTT default; no recording in MVP.
+
+### Sources (verified 2026-06-26)
+
+- MDN — WebRTC perfect negotiation: [developer.mozilla.org/.../Perfect_negotiation][mdn-pn]
+- WebRTC.rs — perfect negotiation deep dive (2026): [webrtc.rs/blog/2026/01/23/...][rs-pn]
+- DIY WebRTC signaling server (polite flag, ready nudge, 2026): [medium.com/@jamesbordane57/...][signal-med]
+- Coturn TURN-REST (ephemeral creds): [github.com/coturn/coturn/wiki/turnserver][turn-rest], [README.turnserver][turn-wiki]
+- TURN relay prevalence: [getstream STUN/TURN][gs-stunturn], [dev.to NAT traversal][nat-dev], [CelloIP TURN 2026][cello-turn], [LiveAPI NAT][liveapi-nat]
+- Opus latency: [Opus codec explained][opus-fora], [WebRTC audio pipeline][fora-pipeline], [Opus (Wikipedia)][opus-wiki], [RFC 7587][rfc7587], [Opus tuning 2026][callsphere]
+- VAD: [@ricky0123/vad-web npm][vad-npm], [vad docs][vad-docs]
+
+[mdn-pn]: https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
+[rs-pn]: https://webrtc.rs/blog/2026/01/23/perfect-negotiation-webrtc-deep-dive.html
+[signal-med]: https://medium.com/@jamesbordane57/webrtc-signaling-server-how-it-works-build-one-node-js-or-skip-it-890e244d90ae
+[turn-rest]: https://github.com/coturn/coturn/wiki/turnserver
+[turn-wiki]: https://github.com/coturn/coturn/blob/master/README.turnserver
+[gs-stunturn]: https://getstream.io/resources/projects/webrtc/advanced/stun-turn/
+[nat-dev]: https://dev.to/alakkadshaw/nat-traversal-how-it-works-4dnc
+[cello-turn]: https://celloip.com/blog/webrtc-turn-server-production-guide/
+[liveapi-nat]: https://liveapi.com/blog/nat-traversal/
+[opus-fora]: https://www.forasoft.com/learn/audio-for-video/articles-audio/opus-codec-explained
+[fora-pipeline]: https://www.forasoft.com/learn/audio-for-video/articles-audio/webrtc-audio-pipeline-end-to-end
+[opus-wiki]: https://en.wikipedia.org/wiki/Opus_(audio_format)
+[rfc7587]: https://datatracker.ietf.org/doc/rfc7587/
+[callsphere]: https://callsphere.ai/blog/vw1e-opus-codec-tuning-ai-voice
+[vad-npm]: https://www.npmjs.com/package/@ricky0123/vad-web
+[vad-docs]: https://docs.vad.ricky0123.com/user-guide/browser/

@@ -42,3 +42,6 @@ This setup lets Grok autonomously prepare high-quality work and directly invoke 
 
 ## Current Tasks Available
 See docs/cursor-tasks/TASK_MANIFEST.md for the canonical inventory of 8 tasks. Each task-*.md is self-contained with goal/requirements/non-goals/references to GDD+mechanics-spec.
+
+**Note (2026-06-26 backend skeleton)**: backend/ created with FastAPI/Starlette authoritative skeleton (task-005). See backend/README.md + app/sim/* (clock+TB exact, arena Parquet loader, engine+verify_replay stubs, WS rooms+10-20Hz deltas, Decimal, basic endpoints, Dockerfile+fly.toml). Tests pass (clock contention, determinism re-sim). Aligned to GDD/mech-spec/arch. Extend for full orders/sabo. (No new top-level docs created outside task scope.)
+
