@@ -46,9 +46,28 @@ export function PositionsTable({ me, markPrice, sector, disabled, onClose, onSet
     setEditing(null);
   };
 
+  const equity = me?.equity ?? 100;
+  const unreal = me?.unrealized ?? 0;
+  const cash = equity - unreal;                 // settled value (100 + realized)
+  const bpLeft = Math.max(0, (me?.buyingPower ?? equity * 3) - (me?.exposure ?? 0));
+
+  const stat = (label: string, value: string, color = '#e5e7eb') => (
+    <div>
+      <div className="text-[9px] uppercase tracking-widest text-[#6b7280]">{label}</div>
+      <div className="font-mono text-sm tabular-nums" style={{ color }}>{value}</div>
+    </div>
+  );
+
   return (
     <div className="panel p-3 flex flex-col gap-2">
-      <div className="text-xs font-medium">POSITIONS</div>
+      <div className="text-xs font-medium">ACCOUNT</div>
+      <div className="grid grid-cols-2 gap-2 rounded border border-[#2a313a] bg-[#0b0e14] p-2">
+        {stat('Cash', cash.toFixed(2))}
+        {stat('Equity', equity.toFixed(2))}
+        {stat('Open P/L', `${unreal >= 0 ? '+' : ''}${unreal.toFixed(2)}`, unreal > 0.0001 ? '#22c55e' : unreal < -0.0001 ? '#ef4444' : '#9ca3af')}
+        {stat('Buying Power', bpLeft.toFixed(0))}
+      </div>
+      <div className="text-xs font-medium mt-1">POSITIONS</div>
       {positions.length === 0 ? (
         <div className="text-[11px] text-[#6b7280]">Flat — no open positions.</div>
       ) : (

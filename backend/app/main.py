@@ -128,7 +128,8 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
             BOT_DRIVERS.pop(match_id).stop()
     eng.state.add_player(player_id)
     # Snapshot before room registration so bg-clock deltas cannot race ahead of it.
-    await websocket.send_json({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id})
+    # Redact opponent book (fog-of-war): you only see your own positions/orders.
+    await websocket.send_json(_redact_for({"type": "snapshot", "state": eng.get_snapshot(), "you": player_id}, player_id))
     room[player_id] = websocket
     if eng._task is None:
         eng.start()
@@ -163,9 +164,37 @@ async def ws_match(websocket: WebSocket, match_id: str, player_id: str = "anon")
         room.pop(player_id, None)
 
 
+# Fields of a player's book that are private to that player (fog-of-war): the
+# opponent only ever sees coarse ip/equity/tb, never exact positions/orders.
+_PRIVATE_BOOK_FIELDS = ("positions", "orders", "realized_pnl", "unrealized_pnl", "buying_power", "exposure")
+
+
+def _redact_for(payload: dict, viewer: str) -> dict:
+    """Return a per-recipient copy of a delta/snapshot with other players' private
+    book fields stripped, so a client can't read the opponent's exact positions."""
+    if not isinstance(payload, dict):
+        return payload
+    # delta.resources[pid] and snapshot.state.players[pid]
+    books = None
+    if isinstance(payload.get("resources"), dict):
+        books = payload["resources"]
+    elif isinstance(payload.get("state"), dict) and isinstance(payload["state"].get("players"), dict):
+        books = payload["state"]["players"]
+    if not books:
+        return payload
+    import copy
+    out = copy.deepcopy(payload)
+    target = out.get("resources") if "resources" in out else out["state"]["players"]
+    for pid, book in target.items():
+        if pid != viewer and isinstance(book, dict):
+            for f in _PRIVATE_BOOK_FIELDS:
+                book.pop(f, None)
+    return out
+
+
 async def broadcast_to_room(mid: str, payload: dict):
-    for ws in list(CONNECTIONS.get(mid, {}).values()):
-        try: await ws.send_json(payload)
+    for pid, ws in list(CONNECTIONS.get(mid, {}).items()):
+        try: await ws.send_json(_redact_for(payload, pid))
         except: pass
 
 

@@ -37,14 +37,31 @@ export function toBar(raw: any): Bar | null {
   };
 }
 
-function parsePosition(raw: any): Position {
+function parsePosition(raw: any, instr?: string): Position {
+  const signed = num(raw?.size);
+  // server position values carry a signed size and no explicit side
+  const side: Side = raw?.side === 'short' || raw?.side === 'long'
+    ? raw.side
+    : (signed < 0 ? 'short' : 'long');
   return {
-    instr: String(raw?.instr ?? raw?.instrument ?? 'X'),
-    side: (raw?.side === 'short' ? 'short' : 'long') as Side,
-    size: num(raw?.size),
+    instr: String(instr ?? raw?.instr ?? raw?.instrument ?? 'X'),
+    side,
+    size: Math.abs(signed),
     entry: num(raw?.entry ?? raw?.entry_price ?? raw?.price),
     unrealized: raw?.unrealized != null ? num(raw.unrealized) : undefined,
   };
+}
+
+// Server sends positions as an object keyed by instrument ({ X: {size, entry} });
+// older/optimistic paths may use an array. Normalize both, dropping flat (size 0).
+function parsePositions(raw: any): Position[] {
+  if (Array.isArray(raw)) return raw.map((p) => parsePosition(p)).filter((p) => p.size !== 0);
+  if (raw && typeof raw === 'object') {
+    return Object.entries(raw)
+      .map(([instr, v]) => parsePosition(v, instr))
+      .filter((p) => p.size !== 0);
+  }
+  return [];
 }
 
 function parseOrder(raw: any): OpenOrder {
@@ -77,8 +94,8 @@ export function parsePlayer(
   markPrice: number,
   prev?: PlayerState,
 ): PlayerState {
-  const positions: Position[] = Array.isArray(raw?.positions)
-    ? raw.positions.map(parsePosition)
+  const positions: Position[] = raw?.positions != null
+    ? parsePositions(raw.positions)
     : prev?.positions ?? [];
   const orders: OpenOrder[] = Array.isArray(raw?.orders)
     ? raw.orders.map(parseOrder)
@@ -88,10 +105,9 @@ export function parsePlayer(
   const ip = raw?.ip != null ? num(raw.ip) : prev?.ip ?? 50;
   const tb = raw?.tb != null && typeof raw.tb === 'number' ? num(raw.tb) : prev?.tb ?? 100;
 
-  const unrealized = positions.reduce(
-    (acc, p) => acc + (p.unrealized != null ? p.unrealized : unrealizedFor(p, markPrice)),
-    0,
-  );
+  const unrealized = raw?.unrealized_pnl != null
+    ? num(raw.unrealized_pnl)
+    : positions.reduce((acc, p) => acc + (p.unrealized != null ? p.unrealized : unrealizedFor(p, markPrice)), 0);
   const pnl = raw?.pnl != null ? num(raw.pnl) : equity - STARTING_CAPITAL;
   const buyingPower = raw?.buying_power != null ? num(raw.buying_power)
     : raw?.buyingPower != null ? num(raw.buyingPower) : prev?.buyingPower;

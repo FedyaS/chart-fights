@@ -32,7 +32,7 @@ const BACKEND_URL =
 const WS_BASE = BACKEND_URL.replace(/^http/, 'ws');
 
 const STARTING_CAPITAL = 100;
-const OFFLINE_BASE_MS = 900; // 1 day per ~0.9s at R=1 (offline only)
+const OFFLINE_BASE_MS = 2000; // ~1 day per 2s at R=1 (offline only) — matches live pacing
 const MATCH_SECONDS = 300;
 
 const levelToR = (l: TempoLevel): number => (l === 'pause' ? 0 : l === 'ff2' ? 2 : l === 'ff3' ? 3 : l === 'ff5' ? 5 : 1);
@@ -512,7 +512,9 @@ export default function ChartFightsApp() {
       });
     }
     if (bar) ctrlRef.current?.addFillMarker(bar, ord.side, youRef.current, youRef.current, `${ord.side === 'long' ? 'BUY' : 'SELL'} ${ord.size}`);
-    if (ord.type === 'market' && bar) {
+    // Optimistic position only offline; in server mode the next delta (~15Hz) is
+    // authoritative and carries the netted position, so a local add would double-count.
+    if (ord.type === 'market' && bar && modeRef.current === 'offline') {
       setPlayers((prev) => {
         const me = prev[youRef.current];
         if (!me) return prev;

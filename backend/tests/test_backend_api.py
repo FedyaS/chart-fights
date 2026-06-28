@@ -119,10 +119,11 @@ def _run_ws_match_flow(lines: list[str]) -> None:
         assert ack_order.get("ok") is True
 
         post_deltas = []
-        deadline = time.time() + 0.6
+        # Paced live feed: wait until a bar crosses and equity moves off 100.
+        deadline = time.time() + 8.0
         while time.time() < deadline:
             try:
-                msg = json.loads(ws.recv(timeout=0.15))
+                msg = json.loads(ws.recv(timeout=0.25))
                 if msg.get("type") == "delta":
                     post_deltas.append(msg)
                     res = msg.get("resources", {})
@@ -130,6 +131,8 @@ def _run_ws_match_flow(lines: list[str]) -> None:
                         lines.append(
                             f"ws_delta p1_eq={res['p1'].get('equity')} p2_eq={res.get('p2', {}).get('equity')}"
                         )
+                        if abs(float(res["p1"].get("equity", 100.0)) - 100.0) > 0.005:
+                            break
             except Exception:
                 break
         lines.append(f"ws_deltas_post_order={len(post_deltas)}")

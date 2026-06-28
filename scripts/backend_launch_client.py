@@ -107,10 +107,12 @@ def run_once(label: str, lines: list[str] | None = None) -> list[str]:
         assert ack_order.get("ok") is True
 
         diagnostic.append("--- DIAGNOSTIC: post-action deltas ---")
-        deadline = time.time() + 0.5
+        # Wait until a bar actually crosses so price moves off entry and equity
+        # reflects P&L (the live feed is paced, so this can take a few seconds).
+        deadline = time.time() + 8.0
         while time.time() < deadline:
             try:
-                raw = ws.recv(timeout=0.15)
+                raw = ws.recv(timeout=0.25)
                 m = json.loads(raw)
                 if m.get("type") == "delta":
                     deltas_seen += 1
@@ -120,6 +122,8 @@ def run_once(label: str, lines: list[str] | None = None) -> list[str]:
                         diagnostic.append(
                             f"ws_delta p1_eq={res['p1'].get('equity')} p2_eq={res['p2'].get('equity')}"
                         )
+                        if abs(float(last_p1_eq) - 100.0) > 0.005:
+                            break
             except Exception:
                 break
         diagnostic.append(f"ws_deltas_total={deltas_seen} ws_last_p1_eq={last_p1_eq}")

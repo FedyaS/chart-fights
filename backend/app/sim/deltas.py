@@ -8,14 +8,25 @@ if TYPE_CHECKING:
 
 
 def build_resources_snapshot(state: "MatchState") -> Dict[str, Dict[str, Any]]:
-    """Per-player ip/equity/tb for delta.resources — explicit loop, correct keys."""
+    """Per-player book for delta.resources. Carries positions + orders (not just
+    ip/equity/tb) so the client reflects fills, closes, and bracket changes every
+    tick — otherwise a server-side close never shows up in the UI."""
     tb_tbs = state.clock.tb_resolver.snapshot().get("tbs", {})
+    price = state.get_price()
     resources: Dict[str, Dict[str, Any]] = {}
     for player_id, ps in state.players.items():
+        unrealized = state.player_unrealized(ps, price)
         resources[player_id] = {
             "ip": float(ps.ip),
             "equity": float(ps.equity),
             "tb": tb_tbs.get(player_id),
+            "realized_pnl": float(ps.realized_pnl),
+            "unrealized_pnl": float(unrealized),
+            "buying_power": float(state._buying_power(ps)),
+            "exposure": float(state._gross_exposure(ps)),
+            "positions": {k: {"size": float(v.get("size", 0)), "entry": float(v.get("entry", 100))}
+                          for k, v in ps.positions.items()},
+            "orders": ps.orders,
         }
     return resources
 

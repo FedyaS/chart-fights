@@ -60,6 +60,10 @@ TB_CONSUME = {
 }
 DEFAULT_R = Decimal("1.0")
 MATCH_DURATION_REAL = 300.0
+# Live pacing: days advanced per real second at R=1. <1 slows the feed so the
+# match is less frantic (≈0.45 day/s baseline). The 5-min match length is unchanged
+# (match_time tracks unscaled real seconds); only how many bars you see slows down.
+LIVE_TIME_SCALE = 0.45
 IP_START = Decimal("50")
 IP_REGEN = Decimal("0.5")
 IP_PNL_GRANT_PCT = Decimal("0.10")
@@ -182,6 +186,10 @@ class SharedClock:
         self.max_t = Decimal(len(bars) - 1) if bars else Decimal("0")
         self.T: Decimal = Decimal("0")
         self.tb_resolver = TBResolver()
+        # Days advanced per real second at R=1. The live loop dials this down so the
+        # match feels less frantic; match_time (the 5-min limit) is unaffected.
+        # Defaults to 1.0 so direct advance() calls in tests keep 1 bar / unit.
+        self.time_scale: Decimal = Decimal("1")
 
     def get_r(self) -> Decimal:
         return self.tb_resolver.get_r()
@@ -217,7 +225,7 @@ class SharedClock:
 
     def advance(self, real_delta: Decimal, players: List[str]) -> Dict[str, Any]:
         r = self.get_r()
-        delta_t = real_delta * r
+        delta_t = real_delta * r * self.time_scale
         old_t = self.T
         self.T = min(self.max_t, self.T + delta_t)
         consumed = self.tb_resolver.advance(real_delta, players)
@@ -914,6 +922,8 @@ class SimulationEngine:
         self.state._last_advance = time.perf_counter()
         # Don't replay pre-match events (already in the connect snapshot) as deltas.
         self.state._event_cursor = len(self.state.events)
+        # Slow the live feed (tests call advance() directly and keep time_scale=1).
+        self.state.clock.time_scale = Decimal(str(LIVE_TIME_SCALE))
         tick = 1.0 / 15  # ~15Hz internal, broadcast on change or rate
         while self.state._active and not self.state.is_over():
             now = time.perf_counter()
@@ -961,6 +971,8 @@ class SimulationEngine:
         """Re-sim from arena + action log; verified only when state hash + equity + T match."""
         orig = self.state
         fresh = SimulationEngine(self.match_id, self.state.arena_id)
+        # Match the live pacing so recorded advance() deltas reproduce the same T.
+        fresh.state.clock.time_scale = orig.clock.time_scale
         for pid in orig.human_players():
             fresh.state.add_player(pid)
 
