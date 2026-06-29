@@ -560,17 +560,18 @@ class MatchState:
             return self._handle_close(player_id, ps, payload, sim_t)
 
         elif action_type == "cancel_order":
-            oid = payload.get("id", payload.get("order_id"))
+            # ids are ints server-side but arrive as strings from the client — compare as str.
+            oid = str(payload.get("id", payload.get("order_id")))
             before = len(ps.orders)
-            ps.orders = [o for o in ps.orders if o.get("id") != oid]
+            ps.orders = [o for o in ps.orders if str(o.get("id")) != oid]
             return len(ps.orders) != before
 
         elif action_type == "modify_order":
-            oid = payload.get("id", payload.get("order_id"))
+            oid = str(payload.get("id", payload.get("order_id")))
             for o in ps.orders:
-                if o.get("id") == oid:
+                if str(o.get("id")) == oid:
                     if "price" in payload:
-                        o["price"] = payload["price"]
+                        o["price"] = float(payload["price"])
                     if "size" in payload:
                         o["size"] = float(Decimal(str(payload["size"])))
                     return True
@@ -682,6 +683,13 @@ class MatchState:
             order["tp"] = tp
         if sl is not None:
             order["sl"] = sl
+        # allow creating a standalone reduce-only TP/SL leg (e.g. set from the chart)
+        if payload.get("reduce_only"):
+            order["reduce_only"] = True
+        if payload.get("kind"):
+            order["kind"] = payload["kind"]
+        if payload.get("group") is not None:
+            order["group"] = payload["group"]
         ps.orders.append(order)
         return True
 

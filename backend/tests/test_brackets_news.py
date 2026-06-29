@@ -102,6 +102,38 @@ def test_orphaned_brackets_dropped_when_flat():
     assert ps.orders == []                            # close retired the brackets
 
 
+# ---- modify / cancel with string ids (the SL-change bug) ------------------
+
+def test_modify_and_cancel_accept_string_ids():
+    eng = _engine()
+    px = float(eng.state.get_price())
+    eng.state._apply_action("p1", "submit_order", {
+        "type": "market", "side": "long", "size": 10, "tp": px * 1.05, "sl": px * 0.95,
+    })
+    ps = _ps(eng)
+    sl = next(o for o in ps.orders if o["kind"] == "sl")
+    new_sl = round(px * 0.90, 2)
+    # client sends the id as a STRING — must still match the int id server-side
+    assert eng.state._apply_action("p1", "modify_order", {"id": str(sl["id"]), "price": new_sl}) is True
+    assert next(o for o in ps.orders if o["kind"] == "sl")["price"] == new_sl
+    tp = next(o for o in ps.orders if o["kind"] == "tp")
+    assert eng.state._apply_action("p1", "cancel_order", {"id": str(tp["id"])}) is True
+    assert not any(o.get("kind") == "tp" for o in ps.orders)
+
+
+def test_set_standalone_reduce_only_leg():
+    eng = _engine()
+    px = float(eng.state.get_price())
+    eng.state._apply_action("p1", "submit_order", {"type": "market", "side": "long", "size": 10})
+    # set an SL from scratch (chart drag / positions table) -> reduce-only stop leg
+    eng.state._apply_action("p1", "submit_order", {
+        "type": "stop", "side": "short", "size": 10, "price": px * 0.95,
+        "reduce_only": True, "kind": "sl",
+    })
+    sl = next(o for o in _ps(eng).orders if o.get("kind") == "sl")
+    assert sl["reduce_only"] and sl["type"] == "stop"
+
+
 # ---- buying power ---------------------------------------------------------
 
 def test_buying_power_rejects_oversize_order():

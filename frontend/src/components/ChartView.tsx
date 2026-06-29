@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react';
 import { useReplayController, type ReplayController } from '../hooks/useReplayController';
 import { DrawingLayer } from './DrawingLayer';
+import { BracketOverlay, type BracketModel } from './BracketOverlay';
 
 interface ChartViewProps {
   onControllerReady?: (ctrl: ReplayController) => void;
@@ -10,9 +11,11 @@ interface ChartViewProps {
   contested?: boolean;
   T?: number;
   paused?: boolean;
+  bracket?: BracketModel | null;
+  onBracketAdjust?: (kind: 'tp' | 'sl', price: number) => void;
 }
 
-export function ChartView({ onControllerReady, R = 1, contested = false, T = 0, paused = false }: ChartViewProps) {
+export function ChartView({ onControllerReady, R = 1, contested = false, T = 0, paused = false, bracket, onBracketAdjust }: ChartViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const ctrl = useReplayController({ containerRef });
   const readyRef = useRef(false);
@@ -32,6 +35,7 @@ export function ChartView({ onControllerReady, R = 1, contested = false, T = 0, 
     <div className="chart-container rounded relative">
       <div ref={containerRef} className="w-full" style={{ minHeight: 420 }} />
       <DrawingLayer ctrl={ctrl} containerRef={containerRef} />
+      <BracketOverlay ctrl={ctrl} containerRef={containerRef} bracket={bracket ?? null} onAdjust={onBracketAdjust ?? (() => {})} />
       <div className="absolute top-2 left-2 flex items-center gap-2 bg-[#0a0c10]/85 px-2.5 py-1 rounded border border-[#2a313a]">
         <span className="text-[10px] uppercase tracking-widest text-[#6b7280]">Market Speed</span>
         <span className="text-sm font-semibold font-mono" style={{ color: speedColor }}>{speedLabel}</span>

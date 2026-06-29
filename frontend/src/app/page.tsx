@@ -16,6 +16,7 @@ import { EndScreen } from '../components/EndScreen';
 import { SAMPLE_ARENAS } from '../lib/sampleArenas';
 import { useVoiceChat, type VoiceSignalType } from '../hooks/useVoiceChat';
 import type { ReplayController } from '../hooks/useReplayController';
+import type { BracketModel } from '../components/BracketOverlay';
 import {
   toBar, num, parsePlayersMap, applyResources, resolveTempo,
   parseEvents, parseFills, parseNews, parseIndicators, otherPlayer,
@@ -72,6 +73,7 @@ export default function ChartFightsApp() {
 
   const [joinId, setJoinId] = useState('');
   const [joinAs, setJoinAs] = useState<'p1' | 'p2'>('p2');
+  const [sidebarTab, setSidebarTab] = useState<'trade' | 'info'>('trade');
 
   // refs for use inside stable WS / timer closures
   const wsRef = useRef<WebSocket | null>(null);
@@ -561,7 +563,7 @@ export default function ChartFightsApp() {
       } else if (pos) {
         // create a fresh reduce-only-style leg opposite the position
         const exitSide = (pos.side === 'long') ? 'short' : 'long';
-        sendWSAction('submit_order', { type: kind === 'tp' ? 'limit' : 'stop', instr, side: exitSide, size: Math.abs(pos.size), price });
+        sendWSAction('submit_order', { type: kind === 'tp' ? 'limit' : 'stop', instr, side: exitSide, size: Math.abs(pos.size), price, reduce_only: true, kind });
       }
     }
     addLog('order', `Set ${kind.toUpperCase()} ${instr} @ ${price.toFixed(2)}`);
@@ -616,6 +618,20 @@ export default function ChartFightsApp() {
   const opp = otherPlayer(players, you);
   const lastClose = currentBar?.close ?? 100;
   const clockColor = timeLeft <= 30 ? '#ef4444' : timeLeft <= 60 ? '#eab308' : '#9ca3af';
+
+  const bracketModel: BracketModel | null = (() => {
+    const pos0 = me?.positions[0] ?? null;
+    if (!pos0) return null;
+    const orders = me!.orders;
+    const tpOrder = orders.find((o) => o.instr === pos0.instr && (o.kind === 'tp' || (o.reduceOnly && o.type === 'limit')));
+    const slOrder = orders.find((o) => o.instr === pos0.instr && (o.kind === 'sl' || (o.reduceOnly && o.type === 'stop')));
+    return {
+      entry: pos0.entry,
+      side: pos0.side === 'long' || pos0.size > 0 ? 'long' : 'short',
+      tp: tpOrder?.price != null ? { id: String(tpOrder.id), price: tpOrder.price } : undefined,
+      sl: slOrder?.price != null ? { id: String(slOrder.id), price: slOrder.price } : undefined,
+    };
+  })();
 
   return (
     <div className="min-h-screen pvp-container">
@@ -697,26 +713,49 @@ export default function ChartFightsApp() {
                   ))}
                 </div>
               </div>
-              <ChartView onControllerReady={handleCtrl} R={tempo.R} contested={tempo.contested} T={T} paused={tempo.R <= 0} />
+              <ChartView onControllerReady={handleCtrl} R={tempo.R} contested={tempo.contested} T={T} paused={tempo.R <= 0} bracket={bracketModel} onBracketAdjust={(kind, price) => { const instr = me?.positions[0]?.instr; if (instr) handleSetBracketLeg(instr, kind, price); }} />
               <IndicatorPanel indicators={indicators} />
               <NewsFeed items={news} />
             </div>
 
             <div className="lg:col-span-4 space-y-3">
-              <Scoreboard you={me} opp={opp} curve={equityCurve} />
-              <ResourceBars tb={me?.tb ?? 100} ip={me?.ip ?? 0} R={tempo.R} contested={tempo.contested} myLevel={tempo.myLevel} onTempo={handleTempo} />
-              <OrderPanel onPlaceOrder={handleOrder} currentPrice={lastClose} buyingPower={me?.buyingPower} exposure={me?.exposure} />
-              <PositionsTable
-                me={me}
-                markPrice={lastClose}
-                sector={sectorOf(matchInfo)}
-                onClose={handleClose}
-                onSetBracketLeg={handleSetBracketLeg}
-                onCancelOrder={handleCancelOrder}
-              />
-              <SaboPanel ip={me?.ip ?? 0} onCast={handleSabo} />
-              <VoicePanel status={voice.status} micOn={voice.micOn} remoteActive={voice.remoteActive} errorMsg={voice.errorMsg} onStart={voice.start} onStop={voice.stop} onToggleMic={voice.toggleMic} />
-              <EventLog events={events} />
+              {/* Sidebar tab switcher */}
+              <div className="flex gap-1 rounded border border-[#2a313a] bg-[#0b0e14] p-1">
+                <button
+                  onClick={() => setSidebarTab('trade')}
+                  className={`flex-1 py-1 rounded text-xs font-semibold tracking-wide transition-colors ${sidebarTab === 'trade' ? 'bg-[#1a1f26] text-white' : 'text-[#6b7280] hover:text-white'}`}
+                >
+                  TRADE
+                </button>
+                <button
+                  onClick={() => setSidebarTab('info')}
+                  className={`flex-1 py-1 rounded text-xs font-semibold tracking-wide transition-colors ${sidebarTab === 'info' ? 'bg-[#1a1f26] text-white' : 'text-[#6b7280] hover:text-white'}`}
+                >
+                  INFO
+                </button>
+              </div>
+
+              {sidebarTab === 'trade' ? (
+                <>
+                  <ResourceBars tb={me?.tb ?? 100} ip={me?.ip ?? 0} R={tempo.R} contested={tempo.contested} myLevel={tempo.myLevel} onTempo={handleTempo} />
+                  <OrderPanel onPlaceOrder={handleOrder} currentPrice={lastClose} buyingPower={me?.buyingPower} exposure={me?.exposure} />
+                  <PositionsTable
+                    me={me}
+                    markPrice={lastClose}
+                    sector={sectorOf(matchInfo)}
+                    onClose={handleClose}
+                    onSetBracketLeg={handleSetBracketLeg}
+                    onCancelOrder={handleCancelOrder}
+                  />
+                </>
+              ) : (
+                <>
+                  <Scoreboard you={me} opp={opp} curve={equityCurve} />
+                  <SaboPanel ip={me?.ip ?? 0} onCast={handleSabo} />
+                  <VoicePanel status={voice.status} micOn={voice.micOn} remoteActive={voice.remoteActive} errorMsg={voice.errorMsg} onStart={voice.start} onStop={voice.stop} onToggleMic={voice.toggleMic} />
+                  <EventLog events={events} />
+                </>
+              )}
             </div>
           </div>
         )}

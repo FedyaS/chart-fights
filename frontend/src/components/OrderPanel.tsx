@@ -64,6 +64,8 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100, buyingPower, expo
     });
   };
 
+  const SIZE_PRESETS = [25, 50, 100, 200];
+
   return (
     <div className="panel p-3 flex flex-col gap-2">
       <div className="flex items-center justify-between">
@@ -75,22 +77,56 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100, buyingPower, expo
         )}
       </div>
 
+      {/* Primary action: LONG / SHORT — large buttons */}
+      <div className="flex gap-1.5">
+        <button
+          onClick={() => setSide('long')}
+          className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors ${
+            side === 'long'
+              ? 'bg-[#22c55e] text-black'
+              : 'bg-[#1a1f26] text-[#6b7280] hover:text-[#22c55e] hover:bg-[#0d2015]'
+          }`}
+        >
+          ▲ LONG
+        </button>
+        <button
+          onClick={() => setSide('short')}
+          className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors ${
+            side === 'short'
+              ? 'bg-[#ef4444] text-black'
+              : 'bg-[#1a1f26] text-[#6b7280] hover:text-[#ef4444] hover:bg-[#1f0d0d]'
+          }`}
+        >
+          ▼ SHORT
+        </button>
+      </div>
+
+      {/* Order type */}
       <div className="flex gap-1 text-[11px]">
         {(['market', 'limit', 'stop'] as const).map((t) => (
-          <button key={t} onClick={() => setOtype(t)} className={`px-2 py-0.5 rounded ${otype === t ? 'bg-[#272d37]' : 'bg-[#1a1f26]'}`}>{t}</button>
+          <button key={t} onClick={() => setOtype(t)} className={`px-2 py-0.5 rounded capitalize ${otype === t ? 'bg-[#272d37] text-white' : 'bg-[#1a1f26] text-[#6b7280]'}`}>{t}</button>
         ))}
       </div>
 
-      <div className="flex gap-1 text-[11px]">
-        <button onClick={() => setSide('long')} className={`flex-1 py-1 rounded ${side === 'long' ? 'bg-[#052e16] text-[#22c55e]' : 'bg-[#1a1f26]'}`}>LONG</button>
-        <button onClick={() => setSide('short')} className={`flex-1 py-1 rounded ${side === 'short' ? 'bg-[#3f1c1c] text-[#ef4444]' : 'bg-[#1a1f26]'}`}>SHORT</button>
-      </div>
-
-      <div className="flex gap-2 items-center text-xs">
-        <label className="text-[#9ca3af]">Size</label>
-        <input type="number" value={size} onChange={(e) => setSize(+e.target.value)} className="bg-[#0b0e14] border border-[#2a313a] px-2 py-0.5 rounded w-16 text-right" />
-        <span className="text-[#9ca3af]">units</span>
-        {otype !== 'market' && (<><label className="text-[#9ca3af] ml-1">Price</label><input type="number" step="0.01" value={limitPrice} onChange={(e) => setLimitPrice(+e.target.value)} className="bg-[#0b0e14] border border-[#2a313a] px-2 py-0.5 rounded w-16 text-right" /></>)}
+      {/* Size */}
+      <div className="space-y-1">
+        <div className="flex gap-2 items-center text-xs">
+          <label className="text-[#9ca3af]">Size</label>
+          <input type="number" value={size} onChange={(e) => setSize(+e.target.value)} className="bg-[#0b0e14] border border-[#2a313a] px-2 py-0.5 rounded w-20 text-right" />
+          <span className="text-[#9ca3af]">units</span>
+          {otype !== 'market' && (
+            <>
+              <label className="text-[#9ca3af] ml-1">Price</label>
+              <input type="number" step="0.01" value={limitPrice} onChange={(e) => setLimitPrice(+e.target.value)} className="bg-[#0b0e14] border border-[#2a313a] px-2 py-0.5 rounded w-20 text-right" />
+            </>
+          )}
+        </div>
+        {/* Quick size presets */}
+        <div className="flex gap-1">
+          {SIZE_PRESETS.map((s) => (
+            <button key={s} onClick={() => setSize(s)} className={`flex-1 py-0.5 rounded text-[10px] font-mono ${size === s ? 'bg-[#272d37] text-white' : 'bg-[#1a1f26] text-[#6b7280] hover:bg-[#272d37]'}`}>{s}</button>
+          ))}
+        </div>
       </div>
 
       <label className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] cursor-pointer select-none">
@@ -101,26 +137,26 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100, buyingPower, expo
       {useBracket && (
         <div className="rounded border border-[#2a313a] bg-[#0b0e14] p-2 space-y-1.5">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#22c55e]">Take Profit</span>
-            <div className="flex items-center gap-1">
+            <span className="text-[#22c55e] w-16">Take Profit</span>
+            <div className="flex items-center gap-1 ml-auto">
               <button onClick={() => setTpPct((v) => Math.max(0.1, +(v - 0.5).toFixed(1)))} className="px-1.5 rounded bg-[#1a1f26]">−</button>
-              <span className="font-mono w-12 text-right">{tpPct.toFixed(1)}%</span>
+              <span className="font-mono w-10 text-center">{tpPct.toFixed(1)}%</span>
               <button onClick={() => setTpPct((v) => +(v + 0.5).toFixed(1))} className="px-1.5 rounded bg-[#1a1f26]">+</button>
-              <span className="font-mono text-[#6b7280] w-16 text-right">@{tpPrice.toFixed(2)}</span>
+              <span className="font-mono text-[#6b7280] w-14 text-right">@{tpPrice.toFixed(2)}</span>
               <span className="font-mono text-[#22c55e] w-14 text-right">+{tpPL.toFixed(2)}</span>
             </div>
           </div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#ef4444]">Stop Loss</span>
-            <div className="flex items-center gap-1">
+            <span className="text-[#ef4444] w-16">Stop Loss</span>
+            <div className="flex items-center gap-1 ml-auto">
               <button onClick={() => setSlPct((v) => Math.max(0.1, +(v - 0.5).toFixed(1)))} className="px-1.5 rounded bg-[#1a1f26]">−</button>
-              <span className="font-mono w-12 text-right">{slPct.toFixed(1)}%</span>
+              <span className="font-mono w-10 text-center">{slPct.toFixed(1)}%</span>
               <button onClick={() => setSlPct((v) => +(v + 0.5).toFixed(1))} className="px-1.5 rounded bg-[#1a1f26]">+</button>
-              <span className="font-mono text-[#6b7280] w-16 text-right">@{slPrice.toFixed(2)}</span>
+              <span className="font-mono text-[#6b7280] w-14 text-right">@{slPrice.toFixed(2)}</span>
               <span className="font-mono text-[#ef4444] w-14 text-right">{slPL.toFixed(2)}</span>
             </div>
           </div>
-          <div className="text-[10px] text-[#6b7280] text-right">Risk : Reward ≈ 1 : {rr.toFixed(2)}</div>
+          <div className="text-[10px] text-[#6b7280] text-right">R:R ≈ 1:{rr.toFixed(2)}</div>
         </div>
       )}
 
@@ -128,11 +164,14 @@ export function OrderPanel({ onPlaceOrder, currentPrice = 100, buyingPower, expo
         <div className="text-[10px] text-[#ef4444]">Exceeds buying power — reduce size.</div>
       )}
 
-      <button onClick={submit} disabled={disabled} className={`mt-1 py-1.5 text-sm rounded font-medium ${disabled ? 'bg-[#272d37] text-[#6b7280] cursor-not-allowed' : 'bg-white text-black active:bg-[#e5e7eb]'}`}>
+      <button
+        onClick={submit}
+        disabled={disabled}
+        style={!disabled ? { backgroundColor: side === 'long' ? '#22c55e' : '#ef4444', color: 'black' } : {}}
+        className={`mt-1 py-3 text-sm rounded-lg font-bold tracking-wide ${disabled ? 'bg-[#272d37] text-[#6b7280] cursor-not-allowed' : 'active:opacity-80'}`}
+      >
         {side.toUpperCase()} {otype.toUpperCase()} {size}u @ ~{currentPrice.toFixed(2)}{useBracket ? ' + bracket' : ''}
       </button>
-
-      <div className="text-[10px] text-[#9ca3af]">Bracket attaches reduce-only TP/SL (OCO). Lines render on the chart.</div>
     </div>
   );
 }
